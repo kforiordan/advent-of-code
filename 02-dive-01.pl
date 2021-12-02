@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-# https://adventofcode.com/2021/day/2#part2
+# https://adventofcode.com/2021/day/2
 #
 # "... the submarine can take a series of commands like forward 1, down 2, or up 3 ... 
 #    forward X increases the horizontal position by X units.
