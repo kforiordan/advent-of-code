@@ -43,7 +43,7 @@ def count_freq(report):
 
     return freq
 
-def filter_report(report, position, bias=1):
+def filter_report(report, position, bias=1, flip_criterion=False):
     sub_report = []
 
     if len(report) <= 1:
@@ -52,31 +52,34 @@ def filter_report(report, position, bias=1):
         freq = count_freq(report)
         n = len(report)
         criteria = [round(((bias/2) + x)/n) for x in freq]
-        pp = pprint.PrettyPrinter(indent=4)
         criterion = criteria[position]
+        if flip_criterion == True:
+            criterion = abs(criterion - 1)
+
         sub_report = [x for x in report if x[position] == criterion]
-        # pp.pprint(report)
-        # pp.pprint(position)
-        # pp.pprint(criteria)
-        # pp.pprint(criterion)
-        # pp.pprint(sub_report)
-        # print("-- ")
+
+        print(f'Criterion: {criterion}')
 
     return sub_report
 
 
-def whittle_report(report, position, bias=1):
+def whittle_report(report, position=0, bias=1, flip_criterion=False):
     solution_set = []
 
-    sub_report = filter_report(report, position, bias)
+    print(f'Position: {position};  Bias: {bias}')
+
+    sub_report = filter_report(report, position, bias, flip_criterion)
+    print("-- ")
 
     if len(sub_report) <= 1:
         solution_set = sub_report
     else:
         position = position + 1
-        solution_set = whittle_report(sub_report, position, bias)
+        solution_set = whittle_report(sub_report, position, bias,
+                                      flip_criterion)
 
     return solution_set
+
 
 if __name__ == "__main__":
     pp = pprint.PrettyPrinter(indent=4)
@@ -86,8 +89,14 @@ if __name__ == "__main__":
     life_support_rating = 0
 
     report = get_report(sys.stdin)
-    #freq = count_freq(report)
-    #sub_report = filter_report(report, 0)
-    s = whittle_report(report, 0, 1)
 
+    s = whittle_report(report, 0, 1)
     oxygen_generator_rating = (binlist2int(s[0]))
+
+    s = whittle_report(report, 0, 1, True)
+    co2_scrubber_rating = (binlist2int(s[0]))
+
+    life_support_rating = oxygen_generator_rating * co2_scrubber_rating
+    pp.pprint(oxygen_generator_rating)
+    pp.pprint(co2_scrubber_rating)
+    pp.pprint(life_support_rating)
