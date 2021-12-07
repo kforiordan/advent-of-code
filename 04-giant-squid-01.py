@@ -1,6 +1,5 @@
 
 import sys
-import pprint
 
 
 def get_bingo_numbers(fh):
@@ -10,7 +9,6 @@ def get_bingo_numbers(fh):
     for line in fh:
         if len(line.strip()) > 3:
             numbers = list(map(int, line.strip().split(',')))
-            #pp.pprint(numbers)  # HOW THE FUCK IS pp IN SCOPE?
             break
 
     return numbers
@@ -38,20 +36,6 @@ def get_bingo_boards(fh):
         boards.append(board)
 
     return boards
-
-
-def solve_boards_incrementally(boards, numbers):
-    solutions = []
-    numbers_so_far = []
-
-    # Try with the first number, then the first two, then first three, etc.
-    for n in numbers:
-        numbers_so_far.append(n)
-        solutions = solve_boards(boards, numbers_so_far)
-        if len(solutions) > 0:
-            break
-
-    return solutions
 
 
 def solve_boards(boards, numbers):
@@ -107,16 +91,36 @@ def solve_seq(row_or_col, numbers):
 
 
 if __name__ == "__main__":
-    pp = pprint.PrettyPrinter(compact=True)
-
     numbers = get_bingo_numbers(sys.stdin)
     boards = get_bingo_boards(sys.stdin)
 
-    # pp.pprint(numbers)
-    # pp.pprint(boards)
-    # exit(0)
+    solutions = []
+    numbers_so_far = []
 
-    solutions = solve_boards_incrementally(boards, numbers)
-    pp.pprint(numbers)
-    pp.pprint(solutions)
+    # Try with the first number, then the first two, then first three, etc.
+    for n in numbers:
+        numbers_so_far.append(n)
+        solutions = solve_boards(boards, numbers_so_far)
+        if len(solutions) > 0:
+            break
+
+    for board in solutions:
+        marked_numbers = []
+        unmarked_numbers = []
+        for row in board:
+            for n in row:
+                found = False
+                for x in numbers_so_far:
+                    if n == x:
+                        found = True
+                        marked_numbers.append(n)
+                        break
+                if found == False:
+                    unmarked_numbers.append(n)
+
+    sum_of_unmarked_numbers = sum(unmarked_numbers)
+    final_number = numbers_so_far[-1]
+    magic_number_not_bingo_something_else = sum_of_unmarked_numbers * final_number
+
+    print(magic_number_not_bingo_something_else)
 
