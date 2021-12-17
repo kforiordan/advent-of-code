@@ -10,12 +10,36 @@ class Header():
         self.type_id = type_id
 
 
+class Packet():
+    def __init__(self, header, payload=None):
+        self.header = header
+        if payload != None:
+            self.payload = payload
+    #     if sub_packets != None:
+    #         self.sub_packets = sub_packets
+    # , sub_packets=None):
+
+
+class LiteralPacket(Packet):
+    payload: int
+
+    def __init__(self, payload):
+        self.payload = payload
+
+class OperatorPacket(Packet):
+    sub_packets: [Packet]	# Is this right?
+
+    def __init__(self, sub_packets):
+        self.sub_packets = sub_packets
+
+
 def parse_header(bitq, idx):
+    #print("{}: {}".format(idx, ''.join(bitq[idx:(idx+6)])))
     version_len, type_id_len = 3, 3
 
     bits = bitq[idx:(idx+version_len)]
     idx += version_len
-    version = int(''.join(bitq[idx:(idx+version_len)]), base=2)
+    version = int(''.join(bits), base=2)
 
     bits = bitq[idx:(idx+type_id_len)]
     idx += type_id_len
@@ -70,29 +94,65 @@ def parse_operator_packet_type_one(bitq, idx):
 
     sub_bitq = bitq[idx:(idx+length_in_bits)]
     idx += length_in_bits
-    sub_packets = parse_packets(sub_bitq, 0)
+    sub_packets = parse_bitq(sub_bitq, 0)
     for p in sub_packets:
         packets.append(p)
 
     return packets
 
 
-
-def parse_bitq(bitq, idx=0):
+def parse_operator_packet_type_two(bitq, idx):
     packets = []
 
+    so_sick_of_naming_variables = 11
+    bits = bitq[idx:(idx+so_sick_of_naming_variables)]
+    idx += so_sick_of_naming_variables
+    n_sub_packets = int(''.join(bits), base=2)
+
+    for i in range(0, n_sub_packets):
+        idx, sub_packets = parse_packet(bitq, idx)
+
+    return idx, packets
+
+
+# Despite the name, this returns a list of packets.
+def parse_packet(bitq, idx, zero_padded=False):
+    packets = []
     idx, header = parse_header(bitq, idx)
+
+    print(" parse_packet: idx {}, header type {}".format(idx, header.type_id))
+    if header.type_id == 4:
+        idx, packet = parse_literal_packet(bitq, idx)
+        packets.append(packet)
+    else:
+        idx, many_many_packets = parse_operator_packet(bitq, idx)
+        for packet in many_many_packets:
+            packets.append(packet)
+
+    if zero_padded:
+        n_bits_in_hex = 8  # Yeah, not 16.  Hahahahahah
+        n_zeroes = (n_bits_in_hex - (idx % n_bits_in_hex)) % n_bits_in_hex
+        for i in range(0, n_zeroes):
+            if bitq[idx] != '0':
+                print("You done goofed: {}".format(idx))
+            idx += 1
+
+    return idx, packets
+
+
+def parse_bitq(bitq, idx=0):
+    all_packets = []
+
+    zero_padded = True
+
     n = len(bitq)
     while idx < n:
-        if header.type_id == 4:
-            idx, packet = parse_literal_packet(bitq, idx)
-            packets.append(packet)
-        else:
-            idx, many_many_packets = parse_operator_packet(bitq, idx)
-            for packet in many_many_packets:
-                packets.append(packet)
+        print("parse_bitq {}".format(idx))
+        idx, packets = parse_packet(bitq, idx, zero_padded)
+        for packet in packets:
+            all_packets.append(packet)
 
-    return packets
+    return all_packets
 
 
 def get_packets_as_bit_list(fh):
