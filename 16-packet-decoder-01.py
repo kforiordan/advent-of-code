@@ -49,7 +49,33 @@ def parse_literal_packet(bitq, idx):
 def parse_operator_packet(bitq, idx):
     packets = []
 
+    length_type_id = bitq[idx]
+    idx += 1
+
+    if length_type_id == '0':
+        packets = parse_operator_packet_type_one(bitq, idx)
+    else:
+        packets = parse_operator_packet_type_one(bitq, idx)
+
     return idx, packets
+
+
+def parse_operator_packet_type_one(bitq, idx):
+    packets = []
+
+    so_sick_of_naming_variables = 15
+    bits = bitq[idx:(idx+so_sick_of_naming_variables)]
+    idx += so_sick_of_naming_variables
+    length_in_bits = int(''.join(bits), base=2)
+
+    sub_bitq = bitq[idx:(idx+length_in_bits)]
+    idx += length_in_bits
+    sub_packets = parse_packets(sub_bitq, 0)
+    for p in sub_packets:
+        packets.append(p)
+
+    return packets
+
 
 
 def parse_bitq(bitq, idx=0):
