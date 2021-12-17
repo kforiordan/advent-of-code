@@ -48,7 +48,7 @@ def parse_header(bitq, idx):
     return idx, Header(version, type_id)
 
 
-def parse_literal_packet(bitq, idx):
+def parse_literal_packet_payload(bitq, idx):
     data_len = 4
 
     numbers = []
@@ -77,14 +77,14 @@ def parse_operator_packet(bitq, idx):
     idx += 1
 
     if length_type_id == '0':
-        packets = parse_operator_packet_type_one(bitq, idx)
+        packets = parse_operator_packet_type_zero(bitq, idx)
     else:
-        packets = parse_operator_packet_type_one(bitq, idx)
+        packets = parse_operator_packet_type_zero(bitq, idx)
 
     return idx, packets
 
 
-def parse_operator_packet_type_one(bitq, idx):
+def parse_operator_packet_type_zero(bitq, idx):
     packets = []
 
     so_sick_of_naming_variables = 15
@@ -101,7 +101,7 @@ def parse_operator_packet_type_one(bitq, idx):
     return packets
 
 
-def parse_operator_packet_type_two(bitq, idx):
+def parse_operator_packet_type_one(bitq, idx):
     packets = []
 
     so_sick_of_naming_variables = 11
@@ -120,9 +120,9 @@ def parse_packet(bitq, idx, zero_padded=False):
     packets = []
     idx, header = parse_header(bitq, idx)
 
-    print(" parse_packet: idx {}, header type {}".format(idx, header.type_id))
+    #print(" parse_packet: idx {}, header type {}".format(idx, header.type_id))
     if header.type_id == 4:
-        idx, packet = parse_literal_packet(bitq, idx)
+        idx, packet = parse_literal_packet_payload(bitq, idx)
         packets.append(packet)
     else:
         idx, many_many_packets = parse_operator_packet(bitq, idx)
@@ -147,7 +147,7 @@ def parse_bitq(bitq, idx=0):
 
     n = len(bitq)
     while idx < n:
-        print("parse_bitq {}".format(idx))
+        #print("parse_bitq {}".format(idx))
         idx, packets = parse_packet(bitq, idx, zero_padded)
         for packet in packets:
             all_packets.append(packet)
