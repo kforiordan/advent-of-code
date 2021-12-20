@@ -10,13 +10,19 @@ def build_path_graph(edges):
     graph = {}
     for (a,b) in edges:
         if a in graph:
-            graph[a].append(b)
+            graph[a].update(set([b]))
         else:
-            graph[a] = [b]
+            graph[a] = set([b])
+        # And the same but in the opposite direction
+        if b in graph:
+            graph[b].update(set([a]))
+        else:
+            graph[b] = set([a])
+
     return graph
 
 
-def is_minor(cave):
+def is_small(cave):
     return cave.islower()
 
 
@@ -24,42 +30,33 @@ def is_big(cave):
     return cave.isupper()
 
 
-def find_paths(graph, start='start', path=None):
+def find_paths(graph, cave:str, path_so_far:list[str]) -> list[list[str]]:
     paths = []
 
-    if path == None:
-        path = [start]
-    else:
-        if start in path:
-            if is_minor(start):
-                return []
-            else:
-                for next_hop in graph[start]:
-                    if next_hop == "end":
-                        
-                    else:
-                        subpath = path.copy()
-                        subpaths = find_paths(graph, next_hop, subpath)
-                        for p in subpaths:
-                            if len(p) > 0:
-                                paths.append(p)
-        else:
-            for next_hop in graph[start]:
-                if next_hop == "end":
-                    paths.append(path.append("end"))
-                else:
-                    subpath = path.copy()
-                    subpaths = find_paths(graph, next_hop, subpath)
-                    for p in subpaths:
-                        paths.append(p)
+    if cave in path_so_far:
+        if is_small(cave):
+            return None
+
+    path = path_so_far.copy()
+    path.append(cave)
+
+    if cave == 'end':
+        return [path]
+
+    for next_hop in graph[cave]:
+        sub_paths = find_paths(graph, next_hop, path)
+        if sub_paths != None:
+            for p in sub_paths:
+                paths.append(p)
 
     return paths
 
 
 if __name__ == "__main__":
     pp = pprint.PrettyPrinter(compact=False)
+
     path_graph = build_path_graph(get_edges(sys.stdin))
-    paths = find_paths(path_graph)
-    pp.pprint(path_graph)
-    print("-- ")
-    pp.pprint(paths)
+
+    paths = find_paths(path_graph, 'start', [])
+
+    print("Number of paths: {}".format(len(paths)))
