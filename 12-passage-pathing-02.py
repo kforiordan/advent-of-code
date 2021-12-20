@@ -30,12 +30,15 @@ def is_big(cave):
     return cave.isupper()
 
 
-def find_paths(graph, cave:str, path_so_far:list[str]) -> list[list[str]]:
+def find_paths(graph, cave:str, path_so_far:list[str], z=0) -> list[list[str]]:
     paths = []
 
     if cave in path_so_far:
         if is_small(cave):
-            return None
+            if z == 1 or cave == 'end' or cave == 'start':
+                return None
+            else:
+                z += 1
 
     path = path_so_far.copy()
     path.append(cave)
@@ -44,7 +47,7 @@ def find_paths(graph, cave:str, path_so_far:list[str]) -> list[list[str]]:
         return [path]
 
     for next_hop in graph[cave]:
-        sub_paths = find_paths(graph, next_hop, path)
+        sub_paths = find_paths(graph, next_hop, path, z)
         if sub_paths != None:
             for p in sub_paths:
                 paths.append(p)
