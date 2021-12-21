@@ -224,12 +224,7 @@ def get_all_version_numbers(packet):
 
 
 def version_sum(packets):
-    total = 0
-
-    for p in packets:
-        total += sum(get_all_version_numbers(p))
-
-    return total
+    return sum(map(sum,map(get_all_version_numbers, packets)))
 
 
 if __name__ == "__main__":
