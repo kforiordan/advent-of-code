@@ -24,6 +24,7 @@ class Packet():
     header: Header
     payload: Payload
 
+
     def __init__(self, header, payload=None):
         if isinstance(header, Header):
             self.header = header
@@ -44,8 +45,75 @@ class Packet():
                 self.payload = LiteralPayload(payload)
 
     def __repr__(self):
-        return("Packet(version={}, type_id={}, payload={}".format(
-            self.header.version, self.header.type_id, "something?"))
+        return("Packet(version={}, type_id={}, payload={})".format(
+            self.header.version, self.header.type_id, pp.pformat(self.payload)))
+
+    def sub_packets(self):
+        if isinstance(self.payload, OperatorPayload):
+            return self.payload.sub_packets
+        else:
+            return[]
+
+    def type_id(self):
+        return(self.header.type_id)
+
+    def version(self):
+        return(self.header.version)
+
+    def val(self):
+        if isinstance(self.payload, LiteralPayload):
+            return self.payload.v
+        else:
+            return None
+
+    def math(self):
+        ops = [lambda x, y: x + y,
+               lambda x, y: x * y,
+               min,
+               max,
+               lambda x: x,
+               lambda x, y: 1 if x > y else 0,
+               lambda x, y: 1 if x < y else 0,
+               lambda x, y: 1 if x == y else 0
+               ]
+
+        if self.type_id() == 4:
+            return self.val()
+        else:
+            total = 0
+            if self.type_id() == 0:
+                for p in self.sub_packets():
+                    total += p.math()
+            elif self.type_id() == 1:
+                total = 1	# Id value for multiplication
+                for p in self.sub_packets():
+                    total *= p.math()
+            elif self.type_id() == 2:
+                s = []
+                for p in self.sub_packets():
+                    s.append(p.math())
+                total = min(s)
+            elif self.type_id() == 3:
+                s = []
+                for p in self.sub_packets():
+                    s.append(p.math())
+                total = max(s)
+            elif self.type_id() == 5:
+                s = []
+                for p in self.sub_packets():
+                    s.append(p.math())
+                total = 1 if s[0] > s[1] else 0
+            elif self.type_id() == 6:
+                s = []
+                for p in self.sub_packets():
+                    s.append(p.math())
+                total = 1 if s[0] < s[1] else 0
+            elif self.type_id() == 7:
+                s = []
+                for p in self.sub_packets():
+                    s.append(p.math())
+                total = 1 if s[0] == s[1] else 0
+            return total
 
 
 class LiteralPayload(Packet):
@@ -57,15 +125,18 @@ class LiteralPayload(Packet):
     def __repr__(self):
         return("LiteralPayload({})".format(self.v))
 
+    def op(self):
+        return self.v
+
 
 class OperatorPayload(Packet):
-    packets: list[Packet]
+    sub_packets: list[Packet]
 
     def __init__(self, sub_packets):
         self.sub_packets = sub_packets
 
     def __repr__(self):
-        return("OperatorPayload({})".format("oh man, idk, something"))
+        return("OperatorPayload({})".format(', '.join(map(pp.pformat,self.sub_packets))))
 
 
 def parse_header(bitq, idx):
@@ -120,30 +191,33 @@ def parse_operator_payload(bitq, idx):
 def parse_operator_payload_type_zero(bitq:list[str], idx:int) -> Payload:
     packets = []
 
-    so_sick_of_naming_variables = 15
-    bits = bitq[idx:(idx+so_sick_of_naming_variables)]
-    idx += so_sick_of_naming_variables
+    payload_len = 15
+    bits = bitq[idx:(idx+payload_len)]
+    idx += payload_len
     length_in_bits = int(''.join(bits), base=2)
 
     sub_bitq = bitq[idx:(idx+length_in_bits)]
     idx += length_in_bits
-    sub_packets = parse_bitq(sub_bitq, 0)
+    sub_packets = parse_bitq(sub_bitq, 0, False)
     for p in sub_packets:
         packets.append(p)
 
-    return packets
+    return idx, packets
 
 
 def parse_operator_payload_type_one(bitq:list[str], idx:int) -> OperatorPayload:
     packets = []
 
-    so_sick_of_naming_variables = 11
-    bits = bitq[idx:(idx+so_sick_of_naming_variables)]
-    idx += so_sick_of_naming_variables
+    payload_count = 11
+    bits = bitq[idx:(idx+payload_count)]
+    idx += payload_count
     n_sub_packets = int(''.join(bits), base=2)
 
+    zero_padded = False
     for i in range(0, n_sub_packets):
-        idx, sub_packets = parse_packet(bitq, idx)
+        idx, packet = parse_packet(bitq, idx, zero_padded)
+        packets.append(packet)
+    #pp.pprint(packets)
 
     return idx, packets
 
@@ -174,10 +248,8 @@ def parse_packet(bitq:list[str], idx:int, zero_padded=False) -> Packet:
     return idx, packet
 
 
-def parse_bitq(bitq:list[str], idx:int=0) -> list[Packet]:
+def parse_bitq(bitq:list[str], idx:int=0, zero_padded=True) -> list[Packet]:
     packets = []
-
-    zero_padded = True
 
     n = len(bitq)
     while idx < n:
@@ -200,17 +272,35 @@ def get_packets_as_bit_list(fh) -> list[str]:
                 bitq.append(d)
 
 
+def get_all_version_numbers(packet):
+    version_numbers = []
+
+    version_numbers.append(packet.header.version)
+    if packet.header.type_id != 4:
+        for p in packet.sub_packets():
+            n = get_all_version_numbers(p)
+            for v in n:
+                version_numbers.append(v)
+
+    return(version_numbers)
+
+
+def version_sum(packets):
+    return sum(map(sum,map(get_all_version_numbers, packets)))
+
+
 if __name__ == "__main__":
     pp = pprint.PrettyPrinter()
     bitq = []	# Not really a queue
     packets = []
 
+
     get_packets_as_bit_list(sys.stdin)	# Updates bitq.  Ugh.
 
     packets = parse_bitq(bitq)
 
-    version_sum = 0
+    #pp.pprint(packets)
     for p in packets:
-        version_sum += p.header.version
+        print(p.math())
 
-    print("Version sum: {}".format(version_sum))
+    #print("Version sum: {}".format(version_sum(packets)))
