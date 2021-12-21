@@ -44,7 +44,7 @@ class Packet():
                 self.payload = LiteralPayload(payload)
 
     def __repr__(self):
-        return("Packet(version={}, type_id={}, payload={}".format(
+        return("Packet(version={}, type_id={}, payload={})".format(
             self.header.version, self.header.type_id, pp.pformat(self.payload)))
 
     def sub_packets(self):
@@ -149,13 +149,16 @@ def parse_operator_payload_type_zero(bitq:list[str], idx:int) -> Payload:
 def parse_operator_payload_type_one(bitq:list[str], idx:int) -> OperatorPayload:
     packets = []
 
-    so_sick_of_naming_variables = 11
-    bits = bitq[idx:(idx+so_sick_of_naming_variables)]
-    idx += so_sick_of_naming_variables
+    payload_count = 11
+    bits = bitq[idx:(idx+payload_count)]
+    idx += payload_count
     n_sub_packets = int(''.join(bits), base=2)
 
+    zero_padded = False
     for i in range(0, n_sub_packets):
-        idx, sub_packets = parse_packet(bitq, idx)
+        idx, packet = parse_packet(bitq, idx, zero_padded)
+        packets.append(packet)
+    #pp.pprint(packets)
 
     return idx, packets
 
