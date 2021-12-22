@@ -73,17 +73,27 @@ def try_velocity(initial_position, velocity, target_area):
 
 if __name__ == "__main__":
     pp = pprint.PrettyPrinter()
-    pos = (0,0)
-    target_area = ([20,30],[-10,-5])
+    initial_pos = (0,0)
+    #target_area = ([20,30],[-10,-5])
+    target_area = ([94,151],[-156,-103])
 
-    highest_y = pos[1]
-    highest_v = None
-    for x in range(0,30):
-        v = (x, 9)
-        high_y = try_velocity(pos, v, target_area)
-        if high_y != None:
-            if high_y > highest_y:
+    ultimate_highest_y = initial_pos[1]
+    ultimate_highest_v = initial_pos[1]
+    for initial_y in range(0, 1000):		# LOLOLOLOLLOLOLOLOOOLOLL
+        highest_y = initial_pos[1]
+        highest_v = initial_pos[1]
+        #initial_y = initial_pos[1]
+        for v_x in range(0,target_area[0][1]):
+            pos = initial_pos
+            v_y = initial_y
+            v = (v_x, v_y)
+            high_y = try_velocity(pos, v, target_area)
+            if high_y != None and high_y > highest_y:
                 highest_y = high_y
                 highest_v = v
+        if highest_y > ultimate_highest_y:
+            ultimate_highest_y = highest_y
+            ultimate_highest_v = highest_v
 
-    print("Highest y was {} with velocity {}".format(highest_y, highest_v))
+    print("Highest y was {} with velocity {}".format(
+        ultimate_highest_y, ultimate_highest_v))
