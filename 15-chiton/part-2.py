@@ -157,36 +157,37 @@ def dijkstra(cave_map, start, end):
     # "Step 2. Until E is labelled or no further labels can be
     # assigned, do the following."
 
-    curr = start
     labelled_vertices = [start]
+    live_labelled_vertices = [start]
     exhausted_adjacent_vertices = []
     while True:
 
         unlabelled_adjacent_vertices = []
-        for v in labelled_vertices:
+        tmp_live_labelled_vertices = []
+        for v in live_labelled_vertices:
             a = adjacent(cave_map, v)
             if len(a) > 0:
                 for x in a:
                     if x.unlabelled():
                         unlabelled_adjacent_vertices.append((v, x))
+                tmp_live_labelled_vertices.append(v)
             else:
                 exhausted_adjacent_vertices.append(v)
-
-        if len(unlabelled_adjacent_vertices) == 0:
-#            pp.print(labelled_vertices)
-            exit(0)
 
         (v, x) = min(unlabelled_adjacent_vertices,
                      key=lambda uav: uav[0].cost() + uav[1].cost())
 
         x.set_label(v, v.cost() + x.cost())
-
-        if x == end:
-            # pp.pprint(v)
-            # pp.pprint(x)
-            break
-
+        tmp_live_labelled_vertices.append(x)
         labelled_vertices.append(x)
+
+        live_labelled_vertices = tmp_live_labelled_vertices
+
+        # We should also check for the condition that all nodes there
+        # are no unlabelled adjacent vertices, i.e. that the end
+        # vertex is unreachable, but we will not do this.
+        if x == end:
+            break
 
     return x
 
