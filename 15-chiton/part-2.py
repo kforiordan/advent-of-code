@@ -1,21 +1,20 @@
 import sys
 import pprint
 
+# numpy has a better infinity than this
+infinity_lol=98765432
 
 class Point():
     x: int
     y: int
     v: int
-    # label: (Point, label)
-    #
-    # This doesn't work: Point hasn't been defined yet, bah.  Probably
-    # not doing anything useful anyway.  They're not type annotations
-    # or hints, idk, what even are they?  They're a poor form of
-    # documentation too.
+    tmp_label: int
+    label: int
 
     def __init__(self, **kwargs):
         self.x, self.y, self.v, self.label = \
             None, None, None, None
+        self.tmp_label = infinity_lol
 
         for k,v in kwargs.items():
             if k in self.__dict__:
@@ -45,25 +44,11 @@ class Point():
                        if v != None])
         return("Point(" + s + ")")
 
-    # Can't call this label, because functions and variables share the
-    # same namespace.
-    def set_label(self, x, d):
-        self.label = (x, d)
+    def set_label(self, v):
+        self.label = v
 
-    def prev(self):
-        if self.label == None:
-            return None
-        else:
-            x, d = self.label
-            return x
-
-    def cost(self):
-        if self.label == None:
-            return self.v
-            return None
-        else:
-            x, d = self.label
-            return d
+    def set_tmp_label(self, v):
+        self.tmp_label = v
 
     def labelled(self):
         return(self.label != None)
@@ -123,7 +108,7 @@ def get_map(fh):
     for y,line in enumerate(fh):
         xs = []
         for x,v in enumerate(list(line.strip())):
-            xs.append(Point(x=x,y=y,v=v))
+            xs.append(Point(x=x,y=y,v=v,tmp_label=infinity_lol))
         ys.append(xs)
     return(ys)
 
@@ -147,49 +132,44 @@ def find_safest_path(cave_map, start, end):
     return find_paths(cave_map, start, end)
 
 
-def dijkstra(cave_map, start, end):
+def dijkstra_improved(cave_map, start, end):
 
     # Quotations here are transcribed from Goodaire and Parmenter
 
-    # "Step 1. Assign to A the label (-, 0)"
-    start.set_label(None, 0)
+    # 1. "Set v_1=A and assign to this vertex the permanent label 0."
+    start.set_label(0)
+    most_recently_labelled = start
 
-    # "Step 2. Until E is labelled or no further labels can be
-    # assigned, do the following."
+    #    "Assign every other vertex a temporary label of ∞"
+    #
+    #    This is done by default at Point() instantiation time.
 
-    labelled_vertices = [start]
-    live_labelled_vertices = [start]
-    exhausted_adjacent_vertices = []
-    while True:
+    # 2. "Until E has been assigned a permanent label or no temporary
+    #    labels are changed in (a) or (b), do the following:"
+    #
+    while end.unlabelled():
 
-        unlabelled_adjacent_vertices = []
-        tmp_live_labelled_vertices = []
-        for v in live_labelled_vertices:
-            a = adjacent(cave_map, v)
-            if len(a) > 0:
-                for x in a:
-                    if x.unlabelled():
-                        unlabelled_adjacent_vertices.append((v, x))
-                tmp_live_labelled_vertices.append(v)
-            else:
-                exhausted_adjacent_vertices.append(v)
+        # (a) "Take the vertex v_i that most recently acquired a
+        # permanent label ... For each vertex v that is adjacent to
+        # v_i and has not yet received a permanent label, if
+        # d+w(v_i→v) < t, the current temporary label of v, change the
+        # temporary label of v to d + w(v_i→v)"
+        for vertex in adjacent(cave_map, most_recently_labelled):
+            if vertex.unlabelled():
+                cost = most_recently_labelled.label + vertex.v
+                if cost < vertex.tmp_label:
+                    vertex.set_tmp_label(cost)
 
-        (v, x) = min(unlabelled_adjacent_vertices,
-                     key=lambda uav: uav[0].cost() + uav[1].cost())
+        # (b) "Take a vertex v that has a temporary label smallest
+        # among all temporary labels in the graph.  Set v_i+1 = v and
+        # make its temporary label permanent."
+        candidates = [vertex for row in cave_map for vertex in row \
+                      if vertex.unlabelled()]
+        nearest = min(candidates, key=lambda x: x.tmp_label)
+        nearest.set_label(nearest.tmp_label)
+        most_recently_labelled = nearest
 
-        x.set_label(v, v.cost() + x.cost())
-        tmp_live_labelled_vertices.append(x)
-        labelled_vertices.append(x)
-
-        live_labelled_vertices = tmp_live_labelled_vertices
-
-        # We should also check for the condition that all nodes there
-        # are no unlabelled adjacent vertices, i.e. that the end
-        # vertex is unreachable, but we will not do this.
-        if x == end:
-            break
-
-    return x
+    return end.label
 
 
 def point_xy(cave_map, x, y):
@@ -200,10 +180,10 @@ if __name__ == "__main__":
     pp = pprint.PrettyPrinter()
 
     cave_map = extrapolate(get_map(sys.stdin), 5)
+    #cave_map = get_map(sys.stdin)
 
     start = cave_map[0][0]
     end = cave_map[-1][-1]
-    path = dijkstra(cave_map, start, end)
+    path_cost = dijkstra_improved(cave_map, start, end)
 
-    print(path.cost())
-
+    print(path_cost)
