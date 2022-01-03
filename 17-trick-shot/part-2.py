@@ -11,7 +11,7 @@ def step(position, velocity):
     # 2. increase y pos by y velocity:
     pos_y += vel_y
 
-    # 3. Due to drag, x tends 1 towards 0
+    # 3. Due to drag, x velocity tends towards 0
     if vel_x > 0:
         vel_x -= 1
 
@@ -40,9 +40,42 @@ def within_area(pos, target_area):
         pos_y <= max(ys) and pos_y >= min(ys)
 
 
+def launch(initial_pos, initial_vel, target):
+    final_state = None
+
+    pos = initial_pos
+    vel = initial_vel
+    positions = [initial_pos]
+    while final_state == None:
+        if within_area(pos, target):
+            final_state = True
+        elif lost(pos, vel, target):
+            final_state = False
+        else:
+            pos, vel = step(pos, vel)
+            positions.append(pos)
+
+    return final_state, positions
+
+
 if __name__ == "__main__":
     pp = pprint.PrettyPrinter()
     initial_pos = (0,0)
 
     test_target_area = ([20,30],[-10,-5])
-    test_target_area = ([94,151],[-156,-103])
+    prod_target_area = ([94,151],[-156,-103])
+
+    target_area = prod_target_area
+
+    good_velocities = []
+    low_x  = min([initial_pos[0],min(target_area[0])])
+    high_x = max(target_area[0])
+    low_y  = min(target_area[1])
+    high_y = 1000	# This is shameful.
+    for y in range(low_y, high_y + 1):
+        for x in range(low_x, high_x + 1):
+            state, positions = launch(initial_pos, (x, y), target_area)
+            if state == True:
+                good_velocities.append((x,y))
+
+    print(len(good_velocities))
