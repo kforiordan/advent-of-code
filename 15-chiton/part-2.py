@@ -180,7 +180,6 @@ if __name__ == "__main__":
     pp = pprint.PrettyPrinter()
 
     cave_map = extrapolate(get_map(sys.stdin), 5)
-    #cave_map = get_map(sys.stdin)
 
     start = cave_map[0][0]
     end = cave_map[-1][-1]
