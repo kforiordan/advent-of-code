@@ -39,36 +39,18 @@ import pprint
 # down, while the right element of the pair should be the regular
 # number divided by two and rounded up."
 
-# class SnailNumber():
-#     # I don't think I can do this in python, and sure what do types
-#     # even matter to python.
-#     #
-#     # val: int or SnailNumber
+# Trees be damned, what if I treated this as a mostly textual problem?
 
-#     def __init__(self, a, b=None):
-#         if b == None:
-#             if isinstance(a, SnailNumber):
-#                 self.val = copy.deepcopy(a)
-#             else:
-#                 # I'm assuming an int here.
-#                 self.val = a
-
-#     def add(self, a):
-#         return([copy.deepcopy(self.val), a])
-
-#     def split(
+def add(a:str, b:str):
+    return "[{},{}]".format(a,b)
 
 
-def add(a, b):
-    return [a,b]
+def explode():
 
-
-def explode(l):
-    # Oh no, I need BFS, I think.
     return []
 
 
-def split(n):
+def split_number(n):
     # >>> round(11/2)
     # 6
     # >>> round(9/2)
@@ -76,9 +58,53 @@ def split(n):
     #
     # Ok.
     #
-    return([round((n-0.25)/2),round((n+0.25)/2)])
+    return("[{},{}]".format(round((n-0.25)/2), round((n+0.25)/2)))
+
+def split(s):
+
+    n = None
+    left = []
+    right = list(s)
+    just_sail_on_through = False
+
+    for i,c in enumerate(right):
+        if just_sail_on_through:
+            left.append(c)
+        else:
+            if c in '[],':
+                if n != None:	# if n is a number
+                    if n < 10:
+                        left.append(str(n))
+                    elif n >= 10:
+                        left.append(str(split_number(n)))
+                        just_sail_on_through = True	# No further processing
+                    n = None
+                left.append(c)
+            elif c in '0123456789':
+                if n == None:
+                    n = int(c)
+                else:
+                    n = (n * 10) + int(c)
+
+    return ''.join(left)
+
+
+def reduce(s):
+    i = 0
+    r = s
+    while True:
+        r = explode(r)
+        if r == s:
+            r = split(r)
+            if r == s:
+                break
+    return r
 
 
 
 if __name__ == "__main__":
-    
+    a = '[[[[0,7],4],[15,[0,13]]],[1,1]]'
+    a_bis = '[[[[0,7],4],[[7,8],[0,13]]],[1,1]]'
+
+    print(split(a))
+    print(a_bis)
