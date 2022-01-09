@@ -41,8 +41,12 @@ import pprint
 
 # Trees be damned, what if I treated this as a mostly textual problem?
 
-def add(a:str, b:str):
+def add_only(a:str, b:str):
     return "[{},{}]".format(a,b)
+
+
+def add(a:str, b:str):
+    return(reduce(add_only(a,b)))
 
 
 def explode():
@@ -62,6 +66,7 @@ def split_number(n):
 
 
 def explode_leftward(s, x):
+#    print("EXPLODE LEFTWARD: {} into {}".format(x, ''.join(s)))
     new_left = []
     n = None
     just_sail_on_through = False
@@ -78,22 +83,29 @@ def explode_leftward(s, x):
                 if n == None:
                     new_left.append(c)
                 else:
-                    new_left.append('{}'.format(x + n))
+#                    print("GOTHEREFORREAL")
+                    new_left.append(str(x + n))
+                    new_left.append(c)
+                    just_sail_on_through = True
+#    print(''.join(reversed(new_left)))
     return(''.join(reversed(new_left)))
 
 
 def explode_rightward(s, x):
-    return(''.join(reversed(explode_leftward(s, x))))
+#    print("EXPLODE RIGHTWARD: {} into {}".format(x, ''.join(s)))
+    return(''.join(reversed(explode_leftward(''.join(reversed(s)), x))))
 
 
 def explode_or_split(s):
 
-    # For tracking whether we should explode or not
+    # Thresholds for when to explode or split.
     explosion_threshold = 4
+    split_threshold = 10
+
+    # For tracking whether we should explode or not
     depth = 0
 
     # For tracking numbers as encountered - split may be needed
-    split_threshold = 10
     n = None
 
     # As we move from left to right through the string, we copy stuff leftwards
@@ -106,20 +118,27 @@ def explode_or_split(s):
     just_sail_on_through = False
 
     for i,c in enumerate(right):
-        #print('{}: "{}" "{}"'.format(i, s[0:i], c))
         if just_sail_on_through:
             left.append(c)
         else:
             if c == '[':
                 depth += 1
                 if depth > explosion_threshold:
-                    left.append('0')
+                    if False:
+                        left.append('0')
                 else:
                     left.append(c)
+            elif c in '0123456789':
+                if n == None:
+                    n = int(c)
+                else:
+                    n = (n * 10) + int(c)
             elif c == ',':
                 # We need to process the left number of a pair
                 if depth > explosion_threshold:
                     left = list(explode_leftward(left, n))
+                    left.append('0')
+                    n = None
                 else:
                     if n != None:
                         if n > split_threshold:
@@ -132,7 +151,21 @@ def explode_or_split(s):
             elif c == ']':
                 # We need to process the right number of a pair
                 if depth > explosion_threshold:
-                    right = list(explode_rightward(right, n))
+#                    print("I SAID I GOT HERE")
+#                    print("{} <-> {} + {}".format(''.join(left), ''.join(right[i:]), n))
+                    right = list(explode_rightward(right[(i+1):], n))
+#                    print("RIGHT {}".format(''.join(right)))
+#                    pp.pprint(right)
+                    n = None
+
+                    # This does not work, as the loop still iterates
+                    # over the original right; the assignment above changes nothing.
+
+                    just_sail_on_through = True
+
+                    for e in right:
+                        left.append(e)
+                    break
                 elif n != None:
                     if n > split_threshold:
                         left.append(str(split_number(n)))
@@ -143,20 +176,19 @@ def explode_or_split(s):
                         left.append(c)
                     n = None
                 depth -= 1
-            elif c in '0123456789':
-                if n == None:
-                    n = int(c)
-                else:
-                    n = (n * 10) + int(c)
+        # print('{} IN: {} -- {} -- {}'.format(i, ''.join(s[0:i]), c, ''.join(s[i:])))
+        # print('{} OUT: {} -- {} -- {}'.format(i, ''.join(left), c, ''.join(right[i:])))
 
     return ''.join(left)
 
 
 def reduce(s):
     r = s
+    prev = None
     while True:
+        prev = r
         r = explode_or_split(r)
-        if r == s:
+        if r == prev:
             break
     return(r)
 
@@ -172,6 +204,11 @@ def trivial_tests():
             'input': '[[[[[9,8],1],2],3],4]',
             'function': explode_or_split,
             'expected_output': '[[[[0,9],2],3],4]'
+        },
+        {
+            'input': '[[[[4,3],4],4],[7,[[8,4],9]]]',
+            'function': lambda x: add(x, '[1,1]'),
+            'expected_output': '[[[[0,7],4],[[7,8],[6,0]]],[8,1]]'
         }
     ]
 
@@ -187,6 +224,7 @@ def trivial_tests():
             print("   wanted: {}".format(t['expected_output']))
             print("  but got: {}".format(actual_output))
         n_passed += result
+
     if n_passed == len(tests):
         print("All {} trivial tests passed!".format(n_passed))
     else:
@@ -195,8 +233,7 @@ def trivial_tests():
     return n_passed == len(tests)
 
 
-
-
 if __name__ == "__main__":
 
+    pp = pprint.PrettyPrinter()
     trivial_tests()
