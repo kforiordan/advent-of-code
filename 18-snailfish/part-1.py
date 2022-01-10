@@ -47,7 +47,19 @@ def sn_add_only(a:str, b:str):
 
 
 def sn_add(a:str, b:str):
-    return(reduce(sn_add_only(a,b)))
+    return(sn_reduce(sn_add_only(a,b)))
+
+
+def sn_reduce(s):
+    r = s
+    prev = None
+    i = 0
+    while True:
+        prev = r
+        r = sn_explode_or_split(r)
+        if r == prev:
+            break
+    return(r)
 
 
 def sn_explode():
@@ -90,7 +102,23 @@ def sn_explode_leftward(s:str, x:int) -> str:
 
 
 def sn_explode_rightward(s, x):
-    return(''.join(reversed(sn_explode_leftward(''.join(reversed(s)), x))))
+    new_right = []
+    n = []
+    just_sail_on_through = False
+    for i,c in enumerate(s):
+        if just_sail_on_through:
+            new_right.append(c)
+        else:
+            if c in '0123456789':
+                n.append(c)
+            else:
+                if n == []:
+                    new_right.append(c)
+                else:
+                    new_right.append(str(x + list2num(n)))
+                    new_right.append(c)
+                    just_sail_on_through = True
+    return(''.join(new_right))
 
 
 def sn_numbers(l):
@@ -192,23 +220,11 @@ def sn_explode_or_split(s):
     return ''.join(map(lambda x: ''.join(x), [left, subj, right]))
 
 
-def sn_reduce(s):
-    r = s
-    prev = None
-    while True:
-        prev = r
-        r = sn_explode_or_split(r)
-        if r == prev:
-            break
-    return(r)
-
-
 def trivial_tests():
 
-    # Could be a lambda value for the 'function' key, but we get a
-    # better function name this way.
+    # Could use a lambda for 'function', but better name this way.
     def tt_add11(x):
-        sn_add_only(x, '[1,1]')
+        return(sn_add(x, '[1,1]'))
 
     tests = [
         {
