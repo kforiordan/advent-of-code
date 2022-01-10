@@ -1,6 +1,7 @@
 import sys
 import copy
 import pprint
+from functools import reduce
 
 
 # "... every snailfish number is a pair - an ordered list of two
@@ -41,20 +42,19 @@ import pprint
 
 # Trees be damned, what if I treated this as a mostly textual problem?
 
-def add_only(a:str, b:str):
+def sn_add_only(a:str, b:str):
     return "[{},{}]".format(a,b)
 
 
-def add(a:str, b:str):
-    return(reduce(add_only(a,b)))
+def sn_add(a:str, b:str):
+    return(reduce(sn_add_only(a,b)))
 
 
-def explode():
-
+def sn_explode():
     return []
 
 
-def split_number(n):
+def sn_split_number(n):
     # >>> round(11/2)
     # 6
     # >>> round(9/2)
@@ -65,8 +65,9 @@ def split_number(n):
     return("[{},{}]".format(round((n-0.25)/2), round((n+0.25)/2)))
 
 
-def explode_leftward(s, x):
-#    print("EXPLODE LEFTWARD: {} into {}".format(x, ''.join(s)))
+# Takes a
+def sn_explode_leftward(s:str, x:int) -> str:
+    return("EL")
     new_left = []
     n = None
     just_sail_on_through = False
@@ -83,20 +84,17 @@ def explode_leftward(s, x):
                 if n == None:
                     new_left.append(c)
                 else:
-#                    print("GOTHEREFORREAL")
                     new_left.append(str(x + n))
                     new_left.append(c)
                     just_sail_on_through = True
-#    print(''.join(reversed(new_left)))
     return(''.join(reversed(new_left)))
 
 
-def explode_rightward(s, x):
-#    print("EXPLODE RIGHTWARD: {} into {}".format(x, ''.join(s)))
-    return(''.join(reversed(explode_leftward(''.join(reversed(s)), x))))
+def sn_explode_rightward(s, x):
+    return("ER")
 
 
-def explode_or_split(s):
+def sn_explode_or_split(s):
 
     # Thresholds for when to explode or split.
     explosion_threshold = 4
@@ -110,104 +108,102 @@ def explode_or_split(s):
 
     # As we move from left to right through the string, we copy stuff leftwards
     left = []
+    subj = []
+    right = []
 
-    # We start with the whole string to our right
-    right = list(s)
+    def is_number(l):
+        return(len(l) > 0 and
+               reduce(lambda x, y: x and y,
+                      map(lambda c: c in '0123456789', l),
+                      True))
+
+    def list2num(l):
+        n = 0
+        for i,x in enumerate(reversed(l)):
+            n += int(x) * int((10**i))
+        return n
 
     # After a split or explode we just copy everything from right to left.
     just_sail_on_through = False
 
-    for i,c in enumerate(right):
-        if just_sail_on_through:
-            left.append(c)
-        else:
-            if c == '[':
-                depth += 1
-                if depth > explosion_threshold:
-                    if False:
-                        left.append('0')
-                else:
-                    left.append(c)
-            elif c in '0123456789':
-                if n == None:
-                    n = int(c)
-                else:
-                    n = (n * 10) + int(c)
-            elif c == ',':
-                # We need to process the left number of a pair
-                if depth > explosion_threshold:
-                    left = list(explode_leftward(left, n))
-                    left.append('0')
-                    n = None
-                else:
-                    if n != None:
-                        if n > split_threshold:
-                            left.append(str(split_number(n)))
-                            just_sail_on_through = True
-                        else:
-                            left.append(str(n))
-                        n = None
-                    left.append(c)
-            elif c == ']':
-                # We need to process the right number of a pair
-                if depth > explosion_threshold:
-#                    print("I SAID I GOT HERE")
-#                    print("{} <-> {} + {}".format(''.join(left), ''.join(right[i:]), n))
-                    right = list(explode_rightward(right[(i+1):], n))
-#                    print("RIGHT {}".format(''.join(right)))
-#                    pp.pprint(right)
-                    n = None
-
-                    # This does not work, as the loop still iterates
-                    # over the original right; the assignment above changes nothing.
-
-                    just_sail_on_through = True
-
-                    for e in right:
-                        left.append(e)
-                    break
-                elif n != None:
-                    if n > split_threshold:
-                        left.append(str(split_number(n)))
-                        left.append(c)
-                        just_sail_on_through = True
+    for i,c in enumerate(list(s)):
+        if c == '[':
+            depth += 1
+            if depth > explosion_threshold:
+                subj.append(c)
+            else:
+                left.append(c)
+        elif c == ',':
+            if depth > explosion_threshold:
+                subj.append(c)
+            else:
+                if is_number(subj):
+                    if list2num(subj) > split_threshold:
+                        subj = sn_split_number(list2num(subj))
+                        right = s[i:]
+                        break
                     else:
-                        left.append(str(n))
+                        left.extend(subj)
                         left.append(c)
-                    n = None
-                depth -= 1
-        # print('{} IN: {} -- {} -- {}'.format(i, ''.join(s[0:i]), c, ''.join(s[i:])))
-        # print('{} OUT: {} -- {} -- {}'.format(i, ''.join(left), c, ''.join(right[i:])))
+                        subj = []
+                else:
+                    left.append(c)
+        elif c == ']':
+            if depth > explosion_threshold:
+                subj.append(c)
+            else:
+                if is_number(subj):
+                    if list2num(subj) > split_threshold:
+                        left.append(c)
+                        subj = sn_split_number(subj)
+                        right = s[i+1:]
+                        break
+                    else:
+                        left.extend(subj)
+                        left.append(c)
+                        subj = []
+                else:
+                    left.append(c)
+            depth -= 1
+        elif c in '0123456789':
+            subj.append(c)
 
-    return ''.join(left)
+    print("L:{};  S:{};  R:{};".format(*map(lambda x: ''.join(x), [left, subj, right])))
+    return ''.join(map(lambda x: ''.join(x), [left, subj, right]))
 
 
-def reduce(s):
+def sn_reduce(s):
     r = s
     prev = None
     while True:
         prev = r
-        r = explode_or_split(r)
+        r = sn_explode_or_split(r)
         if r == prev:
             break
     return(r)
 
 
 def trivial_tests():
+
+    # Could be a lambda value for the 'function' key, but we get a
+    # better function name this way.
+    def tt_add11(x):
+        sn_add_only(x, '[1,1]')
+
     tests = [
         {
             'input': '[[[[0,7],4],[15,[0,13]]],[1,1]]',
-            'function': explode_or_split,
+            'function': sn_explode_or_split,
             'expected_output': '[[[[0,7],4],[[7,8],[0,13]]],[1,1]]'
         },
         {
             'input': '[[[[[9,8],1],2],3],4]',
-            'function': explode_or_split,
+            'function': sn_explode_or_split,
             'expected_output': '[[[[0,9],2],3],4]'
         },
         {
             'input': '[[[[4,3],4],4],[7,[[8,4],9]]]',
-            'function': lambda x: add(x, '[1,1]'),
+            'function': tt_add11,
             'expected_output': '[[[[0,7],4],[[7,8],[6,0]]],[8,1]]'
         }
     ]
