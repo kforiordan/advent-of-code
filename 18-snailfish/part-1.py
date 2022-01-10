@@ -57,6 +57,8 @@ def sn_reduce(s):
     while True:
         prev = r
         r = sn_explode_or_split(r)
+        prev = r
+        r = sn_explode_or_split(r)
         if r == prev:
             break
     return(r)
