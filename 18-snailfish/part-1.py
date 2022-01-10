@@ -67,7 +67,6 @@ def sn_split_number(n):
 
 # Takes a
 def sn_explode_leftward(s:str, x:int) -> str:
-    return("EL")
     new_left = []
     n = None
     just_sail_on_through = False
@@ -91,7 +90,28 @@ def sn_explode_leftward(s:str, x:int) -> str:
 
 
 def sn_explode_rightward(s, x):
-    return("ER")
+    return(''.join(reversed(sn_explode_leftward(''.join(reversed(s)), x))))
+
+
+def sn_numbers(l):
+    numbers = []
+
+    n = []
+    for c in l:
+        if c in '0123456789':
+            n.append(c)
+        elif c in ',]':
+            numbers.append(list2num(n))
+            n = []
+
+    return(numbers)
+
+
+def list2num(l):
+    n = 0
+    for i,x in enumerate(reversed(l)):
+        n += int(x) * int((10**i))
+    return n
 
 
 def sn_explode_or_split(s):
@@ -116,12 +136,6 @@ def sn_explode_or_split(s):
                reduce(lambda x, y: x and y,
                       map(lambda c: c in '0123456789', l),
                       True))
-
-    def list2num(l):
-        n = 0
-        for i,x in enumerate(reversed(l)):
-            n += int(x) * int((10**i))
-        return n
 
     # After a split or explode we just copy everything from right to left.
     just_sail_on_through = False
@@ -151,12 +165,18 @@ def sn_explode_or_split(s):
         elif c == ']':
             if depth > explosion_threshold:
                 subj.append(c)
+                right = s[i+1:]
+                # print("EXPLOSION: L:{};  S:{};  R:{};".format(
+                #     *map(lambda x: ''.join(x), [left, subj, right])))
+                left = sn_explode_leftward(left, sn_numbers(subj)[0])
+                right = sn_explode_rightward(right, sn_numbers(subj)[1])
+                subj = ['0']
+                break
             else:
                 if is_number(subj):
                     if list2num(subj) > split_threshold:
-                        left.append(c)
-                        subj = sn_split_number(subj)
-                        right = s[i+1:]
+                        subj = sn_split_number(list2num(subj))
+                        right = s[i:]
                         break
                     else:
                         left.extend(subj)
@@ -168,7 +188,7 @@ def sn_explode_or_split(s):
         elif c in '0123456789':
             subj.append(c)
 
-    print("L:{};  S:{};  R:{};".format(*map(lambda x: ''.join(x), [left, subj, right])))
+#    print("L:{};  S:{};  R:{};".format(*map(lambda x: ''.join(x), [left, subj, right])))
     return ''.join(map(lambda x: ''.join(x), [left, subj, right]))
 
 
