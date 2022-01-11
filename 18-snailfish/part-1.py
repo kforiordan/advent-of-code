@@ -47,6 +47,7 @@ def sn_add_only(a:str, b:str):
 
 
 def sn_add(a:str, b:str):
+    #print("ADDING {} to {}".format(a, b))
     return(sn_reduce(sn_add_only(a,b)))
 
 
@@ -54,11 +55,11 @@ def sn_reduce(s):
     r = s
     prev = None
     i = 0
+    #print(" before: {}".format(r))
     while True:
         prev = r
         r = sn_explode_or_split(r)
-        prev = r
-        r = sn_explode_or_split(r)
+        #print("  after: {}".format(r))
         if r == prev:
             break
     return(r)
@@ -230,8 +231,10 @@ def sn_explode_or_split(s):
             else:
                 if sn_is_number(subj):
                     if list2num(subj) >= split_threshold:
-                        subj = sn_split_number(list2num(subj))
                         right = s[i:]
+                        # print("SPLIT: L:{};  S:{};  R:{};".format(
+                        #     *map(lambda x: ''.join(x), [left, subj, right])))
+                        subj = sn_split_number(list2num(subj))
                         break
                     else:
                         left.extend(subj)
@@ -252,8 +255,10 @@ def sn_explode_or_split(s):
             else:
                 if sn_is_number(subj):
                     if list2num(subj) >= split_threshold:
-                        subj = sn_split_number(list2num(subj))
                         right = s[i:]
+                        # print("SPLIT: L:{};  S:{};  R:{};".format(
+                        #     *map(lambda x: ''.join(x), [left, subj, right])))
+                        subj = sn_split_number(list2num(subj))
                         break
                     else:
                         left.extend(subj)
@@ -271,11 +276,15 @@ def sn_explode_or_split(s):
 
 def sn_sum_list(l, verbose=False):
     total = None
-    for n in l:
+    for i,n in enumerate(l):
         if total == None:
             total = n
+#            print("INITIAL: {}".format(total))
         else:
+#            print("      N: {}".format(n))
             new_total = sn_add(total, n)
+#            print("  TOTAL: {}".format(new_total))
+#            print("-- ")
             if verbose:
                 print("{} + {} = {}".format(
                     *map(lambda x: ''.join(x), [total, n, new_total])))
@@ -340,6 +349,62 @@ def trivial_tests(verbose=False):
             'input': '[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]',
             'function': sn_magnitude,
             'expected_output': 3488,
+        },
+        {
+            'input': [
+                '[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]',
+                '[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]',
+            ],
+            'function': sn_sum_list,
+            'expected_output': '[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]',
+        },
+        {
+            'input': [
+                '[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]',
+                '[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]',
+            ],
+            'function': sn_sum_list,
+            'expected_output': '[[[[6,7],[6,7]],[[7,7],[0,7]]],[[[8,7],[7,7]],[[8,8],[8,0]]]]'
+        },
+        {
+            'input': [
+                '[[[[6,7],[6,7]],[[7,7],[0,7]]],[[[8,7],[7,7]],[[8,8],[8,0]]]]',
+                '[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]',
+            ],
+            'function': sn_sum_list,
+            'expected_output': '[[[[7,0],[7,7]],[[7,7],[7,8]]],[[[7,7],[8,8]],[[7,7],[8,7]]]]',
+        },
+        {
+            'input': [
+                '[[[[7,0],[7,7]],[[7,7],[7,8]]],[[[7,7],[8,8]],[[7,7],[8,7]]]]',
+                '[7,[5,[[3,8],[1,4]]]]',
+            ],
+            'function': sn_sum_list,
+            'expected_output': '[[[[7,7],[7,8]],[[9,5],[8,7]]],[[[6,8],[0,8]],[[9,9],[9,0]]]]'
+        },
+        {
+            'input': [
+                '[[[[7,7],[7,8]],[[9,5],[8,7]]],[[[6,8],[0,8]],[[9,9],[9,0]]]]',
+                '[[2,[2,2]],[8,[8,1]]]',
+            ],
+            'function': sn_sum_list,
+            'expected_output': '[[[[6,6],[6,6]],[[6,0],[6,7]]],[[[7,7],[8,9]],[8,[8,1]]]]'
+        },
+        {
+            'input': [
+                '[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]',
+                '[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]',
+                '[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]',
+                '[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]',
+                '[7,[5,[[3,8],[1,4]]]]',
+                '[[2,[2,2]],[8,[8,1]]]',
+                '[2,9]',
+                '[1,[[[9,3],9],[[9,0],[0,7]]]]',
+                '[[[5,[7,4]],7],1]',
+                '[[[[4,2],2],6],[8,7]]',
+            ],
+            'function': sn_sum_list,
+            'expected_output': '[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]',
         },
         {
             'input': [
