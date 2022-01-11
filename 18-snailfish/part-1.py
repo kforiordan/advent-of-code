@@ -267,7 +267,18 @@ def trivial_tests():
     return n_passed == len(tests)
 
 
+def get_snailfish_numbers(fh):
+    return [line.strip() for line in fh]
+
 if __name__ == "__main__":
 
     pp = pprint.PrettyPrinter()
-    trivial_tests()
+    if trivial_tests():
+        snailfish_numbers = get_snailfish_numbers(sys.stdin)
+        total = None
+        for n in snailfish_numbers:
+            if total == None:
+                total = n
+                continue
+            total = sn_add(total, n)
+        print(total)
