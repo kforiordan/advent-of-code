@@ -162,12 +162,36 @@ def sn_leftright(n):
     return(tuple(map(lambda x: ''.join(x), [left, right])))
 
 
+def sn_magnitude(sn):
+    left, right = sn_leftright(sn)
+
+    left_magn = 0
+    if sn_is_number(left):
+        left_magn = int(left) * 3
+    else:
+        left_magn = sn_magnitude(left) * 3
+
+    right_magn = 0
+    if sn_is_number(right):
+        right_magn = int(right) * 2
+    else:
+        right_magn = sn_magnitude(right) * 2
+
+    return(left_magn + right_magn)
+
+
 def list2num(l):
     n = 0
     for i,x in enumerate(reversed(l)):
         n += int(x) * int((10**i))
     return n
 
+
+def sn_is_number(l):
+    return(len(l) > 0 and
+           reduce(lambda x, y: x and y,
+                  map(lambda c: c in '0123456789', l),
+                  True))
 
 def sn_explode_or_split(s):
 
@@ -186,12 +210,6 @@ def sn_explode_or_split(s):
     subj = []
     right = []
 
-    def is_number(l):
-        return(len(l) > 0 and
-               reduce(lambda x, y: x and y,
-                      map(lambda c: c in '0123456789', l),
-                      True))
-
     # After a split or explode we just copy everything from right to left.
     just_sail_on_through = False
 
@@ -206,7 +224,7 @@ def sn_explode_or_split(s):
             if depth > explosion_threshold:
                 subj.append(c)
             else:
-                if is_number(subj):
+                if sn_is_number(subj):
                     if list2num(subj) >= split_threshold:
                         subj = sn_split_number(list2num(subj))
                         right = s[i:]
@@ -228,7 +246,7 @@ def sn_explode_or_split(s):
                 subj = ['0']
                 break
             else:
-                if is_number(subj):
+                if sn_is_number(subj):
                     if list2num(subj) >= split_threshold:
                         subj = sn_split_number(list2num(subj))
                         right = s[i:]
@@ -320,8 +338,6 @@ def get_snailfish_numbers(fh):
 if __name__ == "__main__":
 
     pp = pprint.PrettyPrinter()
-    pp.pprint(sn_leftright('[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]'))
-    exit(0)
     if trivial_tests():
         snailfish_numbers = get_snailfish_numbers(sys.stdin)
         sn_sum_list(snailfish_numbers)
