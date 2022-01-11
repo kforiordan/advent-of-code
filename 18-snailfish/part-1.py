@@ -156,7 +156,7 @@ def sn_leftright(n):
             if depth > 1:
                 e.append(c)
             depth -= 1
-        elif c in '012345689':
+        elif c in '0123456789':
             e.append(c)
 
     return(tuple(map(lambda x: ''.join(x), [left, right])))
