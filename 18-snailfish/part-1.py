@@ -162,20 +162,24 @@ def sn_leftright(n):
     return(tuple(map(lambda x: ''.join(x), [left, right])))
 
 
-def sn_magnitude(sn):
+def sn_magnitude(sn, depth=0):
+    #print("SN ({}): {}".format(depth, sn))
     left, right = sn_leftright(sn)
+    #print("  LEFT: {}".format(left))
+    #print("  RIGH: {}".format(right))
+    #print("-- ")
 
     left_magn = 0
     if sn_is_number(left):
         left_magn = int(left) * 3
     else:
-        left_magn = sn_magnitude(left) * 3
+        left_magn = sn_magnitude(left, depth+1) * 3
 
     right_magn = 0
     if sn_is_number(right):
         right_magn = int(right) * 2
     else:
-        right_magn = sn_magnitude(right) * 2
+        right_magn = sn_magnitude(right, depth+1) * 2
 
     return(left_magn + right_magn)
 
@@ -306,7 +310,38 @@ def trivial_tests(verbose=False):
             'input': ['[1,1]', '[2,2]', '[3,3]', '[4,4]', '[5,5]', '[6,6]'],
             'function': sn_sum_list,
             'expected_output': '[[[[5,0],[7,4]],[5,5]],[6,6]]'
-        }
+        },
+        {
+            'input': '[[1,2],[[3,4],5]]',
+            'function': sn_magnitude,
+            'expected_output': 143,
+        },
+        {
+            'input': '[[[[3,0],[5,3]],[4,4]],[5,5]]',
+            'function': sn_magnitude,
+            'expected_output': 791,
+        },
+        {
+            'input': '[[[[0,7],4],[[7,8],[6,0]]],[8,1]]',
+            'function': sn_magnitude,
+            'expected_output': 1384,
+        },
+        {
+            'input': '[[[[1,1],[2,2]],[3,3]],[4,4]]',
+            'function': sn_magnitude,
+            'expected_output': 445,
+        },
+        {
+            'input': '[[[[5,0],[7,4]],[5,5]],[6,6]]',
+            'function': sn_magnitude,
+            'expected_output': 1137,
+        },
+        {
+            'input': '[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]',
+            'function': sn_magnitude,
+            'expected_output': 3488,
+        },
+
     ]
 
     n_passed = 0
@@ -338,6 +373,6 @@ def get_snailfish_numbers(fh):
 if __name__ == "__main__":
 
     pp = pprint.PrettyPrinter()
-    if trivial_tests():
+    if trivial_tests(True):
         snailfish_numbers = get_snailfish_numbers(sys.stdin)
         sn_sum_list(snailfish_numbers)
