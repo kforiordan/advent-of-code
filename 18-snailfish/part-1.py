@@ -137,6 +137,31 @@ def sn_numbers(l):
     return(numbers)
 
 
+def sn_leftright(n):
+    depth = 0
+    left = []
+    right = []
+    e = left
+    for c in n:
+        if c == '[':
+            if depth >= 1:
+                e.append(c)
+            depth += 1
+        elif c == ',':
+            if depth == 1:
+                e = right
+            else:
+                e.append(c)
+        elif c == ']':
+            if depth > 1:
+                e.append(c)
+            depth -= 1
+        elif c in '012345689':
+            e.append(c)
+
+    return(tuple(map(lambda x: ''.join(x), [left, right])))
+
+
 def list2num(l):
     n = 0
     for i,x in enumerate(reversed(l)):
@@ -291,9 +316,12 @@ def trivial_tests(verbose=False):
 def get_snailfish_numbers(fh):
     return [line.strip() for line in fh]
 
+
 if __name__ == "__main__":
 
     pp = pprint.PrettyPrinter()
+    pp.pprint(sn_leftright('[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]'))
+    exit(0)
     if trivial_tests():
         snailfish_numbers = get_snailfish_numbers(sys.stdin)
         sn_sum_list(snailfish_numbers)
