@@ -182,7 +182,7 @@ def sn_explode_or_split(s):
                 subj.append(c)
             else:
                 if is_number(subj):
-                    if list2num(subj) > split_threshold:
+                    if list2num(subj) >= split_threshold:
                         subj = sn_split_number(list2num(subj))
                         right = s[i:]
                         break
@@ -204,7 +204,7 @@ def sn_explode_or_split(s):
                 break
             else:
                 if is_number(subj):
-                    if list2num(subj) > split_threshold:
+                    if list2num(subj) >= split_threshold:
                         subj = sn_split_number(list2num(subj))
                         right = s[i:]
                         break
@@ -222,7 +222,22 @@ def sn_explode_or_split(s):
     return ''.join(map(lambda x: ''.join(x), [left, subj, right]))
 
 
-def trivial_tests():
+def sn_sum_list(l, verbose=False):
+    total = None
+    for n in l:
+        if total == None:
+            total = n
+        else:
+            new_total = sn_add(total, n)
+            if verbose:
+                print("{} + {} = {}".format(
+                    *map(lambda x: ''.join(x), [total, n, new_total])))
+            total = new_total
+
+    return total
+
+
+def trivial_tests(verbose=False):
 
     # Could use a lambda for 'function', but better name this way.
     def tt_add11(x):
@@ -241,8 +256,13 @@ def trivial_tests():
         },
         {
             'input': '[[[[4,3],4],4],[7,[[8,4],9]]]',
-            'function': tt_add11,
+            'function': lambda x: sn_add(x, '[1,1]'),
             'expected_output': '[[[[0,7],4],[[7,8],[6,0]]],[8,1]]'
+        },
+        {
+            'input': ['[1,1]', '[2,2]', '[3,3]', '[4,4]', '[5,5]', '[6,6]'],
+            'function': sn_sum_list,
+            'expected_output': '[[[[5,0],[7,4]],[5,5]],[6,6]]'
         }
     ]
 
@@ -251,7 +271,8 @@ def trivial_tests():
     for i,t in enumerate(tests):
         actual_output = t['function'](t['input'])
         result = actual_output == t['expected_output']
-        print("Test {} {}".format(i, result_strings[int(result)]))
+        if verbose or not result:
+            print("Test {} {}".format(i, result_strings[int(result)]))
         if not result:
             print(" Function: {}".format(t['function']))
             print("      for: {}".format(t['input']))
@@ -275,10 +296,4 @@ if __name__ == "__main__":
     pp = pprint.PrettyPrinter()
     if trivial_tests():
         snailfish_numbers = get_snailfish_numbers(sys.stdin)
-        total = None
-        for n in snailfish_numbers:
-            if total == None:
-                total = n
-                continue
-            total = sn_add(total, n)
-        print(total)
+        sn_sum_list(snailfish_numbers)
