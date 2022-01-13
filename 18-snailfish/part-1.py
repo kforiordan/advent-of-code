@@ -42,25 +42,29 @@ from functools import reduce
 
 # Trees be damned, what if I treated this as a mostly textual problem?
 
-def sn_add_only(a:str, b:str):
+def sn_add_only(a:str, b:str) -> str:
     return "[{},{}]".format(a,b)
 
 
-def sn_add(a:str, b:str):
-    #print("ADDING {} to {}".format(a, b))
-    return(sn_reduce(sn_add_only(a,b)))
+def sn_add(a:str, b:str) -> str:
+#    print("sn_add: adding  {}  to  {}".format(a, b))
+    result = sn_reduce(sn_add_only(a,b))
+#    print("sn_add: result  {}".format(result))
+    return(result)
 
 
-def sn_reduce(s):
+def sn_reduce(s:str) -> str:
     r = s
     prev = None
     i = 0
-    #print(" before: {}".format(r))
+#    print("sn_reduce({}): {}".format(i, r))
     while True:
+        i += 1
         prev = r
         r = sn_explode_or_split(r)
-        #print("  after: {}".format(r))
+#        print("sn_reduce({}): {}".format(i, r))
         if r == prev:
+#            print("sn_reduce: breaking now")
             break
     return(r)
 
@@ -83,22 +87,19 @@ def sn_split_number(n):
 # Takes a
 def sn_explode_leftward(s:str, x:int) -> str:
     new_left = []
-    n = None
+    n = []
     just_sail_on_through = False
     for i,c in enumerate(reversed(s)):
         if just_sail_on_through:
             new_left.append(c)
         else:
             if c in '0123456789':
-                if n == None:
-                    n = int(c)
-                else:
-                    n = (n * 10) + int(c)
+                n.append(c)
             else:
-                if n == None:
+                if n == []:
                     new_left.append(c)
                 else:
-                    new_left.append(str(x + n))
+                    new_left.append(str(x + list2num(list(reversed(n)))))
                     new_left.append(c)
                     just_sail_on_through = True
     return(''.join(reversed(new_left)))
@@ -115,12 +116,12 @@ def sn_explode_rightward(s, x):
             if c in '0123456789':
                 n.append(c)
             else:
-                if n == []:
-                    new_right.append(c)
-                else:
+                if n:
                     new_right.append(str(x + list2num(n)))
                     new_right.append(c)
                     just_sail_on_through = True
+                else:
+                    new_right.append(c)
     return(''.join(new_right))
 
 
@@ -185,6 +186,7 @@ def sn_magnitude(sn, depth=0):
     return(left_magn + right_magn)
 
 
+# ['3','7','9'] -> 379
 def list2num(l):
     n = 0
     for i,x in enumerate(reversed(l)):
@@ -197,6 +199,7 @@ def sn_is_number(l):
            reduce(lambda x, y: x and y,
                   map(lambda c: c in '0123456789', l),
                   True))
+
 
 def sn_explode_or_split(s):
 
@@ -293,13 +296,18 @@ def sn_sum_list(l, verbose=False):
     return total
 
 
-def trivial_tests(verbose=False):
+def trivial_tests(only=None, verbose=False):
 
     # Could use a lambda for 'function', but better name this way.
     def tt_add11(x):
         return(sn_add(x, '[1,1]'))
 
     tests = [
+        {
+            'input': ['3','7','9'],
+            'function': list2num,
+            'expected_output': 379,
+        },
         {
             'input': '[[[[0,7],4],[15,[0,13]]],[1,1]]',
             'function': sn_explode_or_split,
@@ -309,6 +317,26 @@ def trivial_tests(verbose=False):
             'input': '[[[[[9,8],1],2],3],4]',
             'function': sn_explode_or_split,
             'expected_output': '[[[[0,9],2],3],4]'
+        },
+        {
+            'input': '[7,[6,[5,[4,[3,2]]]]]',
+            'function': sn_explode_or_split,
+            'expected_output': '[7,[6,[5,[7,0]]]]'
+        },
+        {
+            'input': '[[6,[5,[4,[3,2]]]],1]',
+            'function': sn_explode_or_split,
+            'expected_output': '[[6,[5,[7,0]]],3]',
+        },
+        {
+            'input': '[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]',
+            'function': sn_explode_or_split,
+            'expected_output': '[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]',
+        },
+        {
+            'input': '[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]',
+            'function': sn_explode_or_split,
+            'expected_output': '[[3,[2,[8,0]]],[9,[5,[7,0]]]]',
         },
         {
             'input': '[[[[4,3],4],4],[7,[[8,4],9]]]',
@@ -351,6 +379,25 @@ def trivial_tests(verbose=False):
             'expected_output': 3488,
         },
         {
+            'name': 'stupid',
+            'input': '[[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]]',
+            'function': sn_reduce,
+            'expected_output': '[[[[4,0],[5,4]],[[7,7],[6,0]]]]'
+        },
+        {
+            'name': 'also stupid',
+            'input': '[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]',
+            'function': sn_reduce,
+            'expected_output': '[[8,[7,7]],[[7,9],[5,0]]]]'
+        },
+        {
+            'name': 'sn_add',
+            'input': '[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]',
+            'function': lambda x: sn_add(x, '[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]'),
+            'expected_output': '[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]',
+        },
+        {
+            'name': 'first sum list test',
             'input': [
                 '[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]',
                 '[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]',
@@ -443,16 +490,21 @@ def trivial_tests(verbose=False):
     n_passed = 0
     result_strings = ["failed", "passed"]
     for i,t in enumerate(tests):
-        actual_output = t['function'](t['input'])
-        result = actual_output == t['expected_output']
-        if verbose or not result:
-            print("Test {} {}".format(i, result_strings[int(result)]))
-        if not result:
-            print(" Function: {}".format(t['function']))
-            print("      for: {}".format(t['input']))
-            print("   wanted: {}".format(t['expected_output']))
-            print("  but got: {}".format(actual_output))
-        n_passed += result
+        if only == None or i in only:
+            actual_output = t['function'](t['input'])
+            result = actual_output == t['expected_output']
+            if verbose or not result:
+                test_title = f'Test {i}'
+                if 'name' in t:
+                    test_title = t['name']
+                print("{} {}".format(test_title, result_strings[int(result)]))
+                if not result:
+                    print(" Function: {}".format(t['function']))
+                    print("      for: {}".format(t['input']))
+                    print("   wanted: {}".format(t['expected_output']))
+                    print("  but got: {}".format(actual_output))
+                    exit(0)
+            n_passed += result
 
     if n_passed == len(tests):
         print("All {} trivial tests passed!".format(n_passed))
@@ -469,7 +521,10 @@ def get_snailfish_numbers(fh):
 if __name__ == "__main__":
 
     pp = pprint.PrettyPrinter()
-    if trivial_tests():
+
+    #if trivial_tests(only=[0,11],verbose=True):
+    if trivial_tests(verbose=True):
+    #if trivial_tests(only=[11],verbose=True):
         snailfish_numbers = get_snailfish_numbers(sys.stdin)
         print(sn_sum_list(snailfish_numbers))
         print(sn_magnitude(sn_sum_list(snailfish_numbers)))
