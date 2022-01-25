@@ -2,6 +2,7 @@ import sys
 import copy
 import pprint
 from functools import reduce
+from collections import defaultdict
 
 
 # "... every snailfish number is a pair - an ordered list of two
@@ -57,23 +58,26 @@ def sn_reduce(s:str) -> str:
     r = s
     prev = None
     i = 0
-#    print("sn_reduce({}): {}".format(i, r))
     while True:
         i += 1
         prev = r
+        print("sn_reduce({}): {}".format(i, r))
         r = sn_explode_or_split(r)
-#        print("sn_reduce({}): {}".format(i, r))
         if r == prev:
-#            print("sn_reduce: breaking now")
+            print("sn_reduce: breaking now")
+            print("")
             break
+        print("")
+
+    print("sn_reduce({}): {}".format(i, r))
+
+    if not sn_well_formed(r):
+        print("FUCK THIS: {}".format(r))
+
     return(r)
 
 
-def sn_explode():
-    return []
-
-
-def sn_split_number(n):
+def sn_split_number(n:int) -> str:
     # >>> round(11/2)
     # 6
     # >>> round(9/2)
@@ -101,14 +105,29 @@ def sn_explode_leftward(s:str, x:int) -> str:
                 else:
                     new_left.append(str(x + list2num(list(reversed(n)))))
                     new_left.append(c)
+                    n = []
                     just_sail_on_through = True
+
+    if n:
+        print("sn_explode_leftward: remaining in n: {}".format(''.join(n)))
+
     return(''.join(reversed(new_left)))
 
 
-def sn_explode_rightward(s, x):
+def sn_well_formed(s:str) -> bool:
+    h = defaultdict(int)
+    for c in s:
+        h[c] += 1
+    if h['['] == h[']']:
+        return(True)
+    return(False)
+
+
+def sn_explode_rightward(s:str, x:int) -> str:
     new_right = []
     n = []
     just_sail_on_through = False
+    added = False
     for i,c in enumerate(s):
         if just_sail_on_through:
             new_right.append(c)
@@ -117,11 +136,17 @@ def sn_explode_rightward(s, x):
                 n.append(c)
             else:
                 if n:
+                    added = True
                     new_right.append(str(x + list2num(n)))
                     new_right.append(c)
+                    n = []
                     just_sail_on_through = True
                 else:
                     new_right.append(c)
+
+    if not added:
+        print("sn_explode_rightward: unused {}".format(x))
+
     return(''.join(new_right))
 
 
@@ -235,9 +260,11 @@ def sn_explode_or_split(s):
                 if sn_is_number(subj):
                     if list2num(subj) >= split_threshold:
                         right = s[i:]
-                        # print("SPLIT: L:{};  S:{};  R:{};".format(
-                        #     *map(lambda x: ''.join(x), [left, subj, right])))
+                        print("before split at ,: L:{};  S:{};  R:{};".format(
+                            *map(lambda x: ''.join(x), [left, subj, right])))
                         subj = sn_split_number(list2num(subj))
+                        print("after split at ,: L:{};  S:{};  R:{};".format(
+                            *map(lambda x: ''.join(x), [left, subj, right])))
                         break
                     else:
                         left.extend(subj)
@@ -249,19 +276,23 @@ def sn_explode_or_split(s):
             if depth > explosion_threshold:
                 subj.append(c)
                 right = s[i+1:]
-                # print("EXPLOSION: L:{};  S:{};  R:{};".format(
-                #     *map(lambda x: ''.join(x), [left, subj, right])))
+                print("before explosion: L:{};  S:{};  R:{};".format(
+                    *map(lambda x: ''.join(x), [left, subj, right])))
                 left = sn_explode_leftward(left, sn_numbers(subj)[0])
                 right = sn_explode_rightward(right, sn_numbers(subj)[1])
                 subj = ['0']
+                print("after explosion: L:{};  S:{};  R:{};".format(
+                    *map(lambda x: ''.join(x), [left, subj, right])))
                 break
             else:
                 if sn_is_number(subj):
                     if list2num(subj) >= split_threshold:
                         right = s[i:]
-                        # print("SPLIT: L:{};  S:{};  R:{};".format(
-                        #     *map(lambda x: ''.join(x), [left, subj, right])))
+                        print("before split at ]: L:{};  S:{};  R:{};".format(
+                            *map(lambda x: ''.join(x), [left, subj, right])))
                         subj = sn_split_number(list2num(subj))
+                        print("after split at ]: L:{};  S:{};  R:{};".format(
+                            *map(lambda x: ''.join(x), [left, subj, right])))
                         break
                     else:
                         left.extend(subj)
@@ -386,14 +417,21 @@ def trivial_tests(only=None, verbose=False):
         },
         {
             'name': 'also stupid',
-            'input': '[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]',
+            'input': '[[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]]',
             'function': sn_reduce,
-            'expected_output': '[[8,[7,7]],[[7,9],[5,0]]]]'
+            'expected_output': '[[[8,[7,7]],[[7,9],[5,0]]]]]'
+        },
+        {
+            'name': 'stupid7',
+            'input': '[[14,[[[3,7],[4,3]],[[6,3],[8,8]]]]]',
+            'function': sn_reduce,
+            'expected_output': '[[[8,[7,7]],[[7,9],[5,0]]]]]'
         },
         {
             'name': 'sn_add',
             'input': '[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]',
             'function': lambda x: sn_add(x, '[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]'),
+                                             [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
             'expected_output': '[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]',
         },
         {
@@ -490,20 +528,21 @@ def trivial_tests(only=None, verbose=False):
     n_passed = 0
     result_strings = ["failed", "passed"]
     for i,t in enumerate(tests):
-        if only == None or i in only:
+        if only == None or i in only or \
+           ('name' in t and t['name'] in only):
             actual_output = t['function'](t['input'])
             result = actual_output == t['expected_output']
             if verbose or not result:
                 test_title = f'Test {i}'
                 if 'name' in t:
-                    test_title = t['name']
+                    test_title = 'Test {}, {},'.format(i, t['name'])
                 print("{} {}".format(test_title, result_strings[int(result)]))
                 if not result:
                     print(" Function: {}".format(t['function']))
                     print("      for: {}".format(t['input']))
                     print("   wanted: {}".format(t['expected_output']))
                     print("  but got: {}".format(actual_output))
-                    exit(0)
+                print("-- \n")
             n_passed += result
 
     if n_passed == len(tests):
@@ -522,9 +561,10 @@ if __name__ == "__main__":
 
     pp = pprint.PrettyPrinter()
 
-    #if trivial_tests(only=[0,11],verbose=True):
-    if trivial_tests(verbose=True):
-    #if trivial_tests(only=[11],verbose=True):
+    #if trivial_tests(verbose=True):
+    #if trivial_tests(only=["stupid","also stupid"],verbose=True):
+    #if trivial_tests(only=["sn_add"],verbose=True):
+    if trivial_tests(only=["stupid","also stupid", "stupid7", "sn_add"],verbose=True):
         snailfish_numbers = get_snailfish_numbers(sys.stdin)
         print(sn_sum_list(snailfish_numbers))
         print(sn_magnitude(sn_sum_list(snailfish_numbers)))
