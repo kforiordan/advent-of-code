@@ -43,52 +43,62 @@ from collections import defaultdict
 
 # Trees be damned, what if I treated this as a mostly textual problem?
 
+
+# This is a poor check: we just count the number of brackets and
+# return true if there's the same number of closing brackets as
+# opening brackets; otherwise false.  It'll do.
+#
+def sn_is_well_formed(sn:str) -> bool:
+    h = defaultdict(int)
+    for c in sn:
+        h[c] += 1
+    if h['['] == h[']']:
+        return(True)
+    return(False)
+
+
+# Adds a number or snailfish number (string) to another number
+# (string) or snailfish number (string), returns a snailfish number
+# (string).
+#
 def sn_add_only(a:str, b:str) -> str:
     return "[{},{}]".format(a,b)
 
 
+# Performs snailfish number addition, then reduces the result.
+#
 def sn_add(a:str, b:str) -> str:
-#    print("sn_add: adding  {}  to  {}".format(a, b))
     result = sn_reduce(sn_add_only(a,b))
-#    print("sn_add: result  {}".format(result))
     return(result)
 
 
-def sn_reduce(s:str) -> str:
-    r = s
-    prev = None
+# Applies explode and split operations repeatedly for as long as they
+# change the snailfish number.
+#
+def sn_reduce(sn:str) -> str:
     i = 0
     while True:
+        prev = sn
+        sn = sn_explode_only(sn);
+        if sn == prev:
+            sn = sn_split_only(sn)
+            if sn == prev:
+                break
         i += 1
-        prev = r
-        print("sn_reduce({}): {}".format(i, r))
-        r = sn_explode_or_split(r)
-        if r == prev:
-            print("sn_reduce: breaking now")
-            print("")
-            break
-        print("")
-
-    print("sn_reduce({}): {}".format(i, r))
-
-    if not sn_well_formed(r):
-        print("FUCK THIS: {}".format(r))
-
-    return(r)
+    return sn
 
 
+# Splits a number (int) into a snailfish number
+#
 def sn_split_number(n:int) -> str:
-    # >>> round(11/2)
-    # 6
-    # >>> round(9/2)
-    # 4
-    #
-    # Ok.
-    #
-    return("[{},{}]".format(round((n-0.25)/2), round((n+0.25)/2)))
+    # The 0.2 is just to skew the rounding so it goes our way
+    return("[{},{}]".format(round((n-0.2)/2), round((n+0.2)/2)))
 
 
-# Takes a
+# Takes a snailfish number and an int, adds the int to the first digit
+# found in the snailfish number, searching from end of snailfish
+# number to beginning, i.e. leftwards.
+#
 def sn_explode_leftward(s:str, x:int) -> str:
     new_left = []
     n = []
@@ -107,22 +117,11 @@ def sn_explode_leftward(s:str, x:int) -> str:
                     new_left.append(c)
                     n = []
                     just_sail_on_through = True
-
-    if n:
-        print("sn_explode_leftward: remaining in n: {}".format(''.join(n)))
-
     return(''.join(reversed(new_left)))
 
 
-def sn_well_formed(s:str) -> bool:
-    h = defaultdict(int)
-    for c in s:
-        h[c] += 1
-    if h['['] == h[']']:
-        return(True)
-    return(False)
-
-
+# Like sn_explode_leftward, but from beginning to end.  Rightwards.
+#
 def sn_explode_rightward(s:str, x:int) -> str:
     new_right = []
     n = []
@@ -144,12 +143,12 @@ def sn_explode_rightward(s:str, x:int) -> str:
                 else:
                     new_right.append(c)
 
-    if not added:
-        print("sn_explode_rightward: unused {}".format(x))
-
     return(''.join(new_right))
 
 
+# Returns a list of numbers (ints), not digits, present in a simple
+# snailfish number.  What bullshit is this?
+#
 def sn_numbers(l):
     numbers = []
 
@@ -164,7 +163,11 @@ def sn_numbers(l):
     return(numbers)
 
 
-def sn_leftright(n):
+# Returns a tuple containing the left and right parts of a snailfish
+# number.  E.g. given "[a,b]", returns (a,b), regardless of whether a
+# and/or b are simple numbers, snailfish numbers, whatever.
+#
+def sn_leftright(n:str):
     depth = 0
     left = []
     right = []
@@ -189,21 +192,20 @@ def sn_leftright(n):
     return(tuple(map(lambda x: ''.join(x), [left, right])))
 
 
+# Triple the left part of the snailfish number plus double the right
+# part.  Recursively.
+#
 def sn_magnitude(sn, depth=0):
-    #print("SN ({}): {}".format(depth, sn))
     left, right = sn_leftright(sn)
-    #print("  LEFT: {}".format(left))
-    #print("  RIGH: {}".format(right))
-    #print("-- ")
 
     left_magn = 0
-    if sn_is_number(left):
+    if sn_is_simple_number(left):
         left_magn = int(left) * 3
     else:
         left_magn = sn_magnitude(left, depth+1) * 3
 
     right_magn = 0
-    if sn_is_number(right):
+    if sn_is_simple_number(right):
         right_magn = int(right) * 2
     else:
         right_magn = sn_magnitude(right, depth+1) * 2
@@ -219,92 +221,74 @@ def list2num(l):
     return n
 
 
-def sn_is_number(l):
+# Returns true if everything in the list is a digit (string)
+def sn_is_simple_number(l):
     return(len(l) > 0 and
            reduce(lambda x, y: x and y,
                   map(lambda c: c in '0123456789', l),
                   True))
 
 
-def sn_explode_or_split(s):
-
-    # Thresholds for when to explode or split.
+def sn_explode_only(sn):
     explosion_threshold = 4
-    split_threshold = 10
-
-    # For tracking whether we should explode or not
     depth = 0
 
-    # For tracking numbers as encountered - split may be needed
-    n = None
+    # As we move from left to right through the string, we copy stuff
+    # to the target which, initially, is the left list.
+    left, subj, right = [], [], []
+    target = left
 
-    # As we move from left to right through the string, we copy stuff leftwards
-    left = []
-    subj = []
-    right = []
-
-    # After a split or explode we just copy everything from right to left.
-    just_sail_on_through = False
-
-    for i,c in enumerate(list(s)):
+    for i,c in enumerate(list(sn)):
         if c == '[':
             depth += 1
             if depth > explosion_threshold:
-                subj.append(c)
-            else:
-                left.append(c)
+                target = subj
+            target.append(c)
         elif c == ',':
-            if depth > explosion_threshold:
-                subj.append(c)
-            else:
-                if sn_is_number(subj):
-                    if list2num(subj) >= split_threshold:
-                        right = s[i:]
-                        print("before split at ,: L:{};  S:{};  R:{};".format(
-                            *map(lambda x: ''.join(x), [left, subj, right])))
-                        subj = sn_split_number(list2num(subj))
-                        print("after split at ,: L:{};  S:{};  R:{};".format(
-                            *map(lambda x: ''.join(x), [left, subj, right])))
-                        break
-                    else:
-                        left.extend(subj)
-                        left.append(c)
-                        subj = []
-                else:
-                    left.append(c)
+            target.append(c)
         elif c == ']':
+            target.append(c)
             if depth > explosion_threshold:
-                subj.append(c)
-                right = s[i+1:]
-                print("before explosion: L:{};  S:{};  R:{};".format(
-                    *map(lambda x: ''.join(x), [left, subj, right])))
+                # We have reached the end of the snail number we are
+                # exploding, so explode.
                 left = sn_explode_leftward(left, sn_numbers(subj)[0])
+                right = sn[i+1:]
                 right = sn_explode_rightward(right, sn_numbers(subj)[1])
                 subj = ['0']
-                print("after explosion: L:{};  S:{};  R:{};".format(
-                    *map(lambda x: ''.join(x), [left, subj, right])))
                 break
-            else:
-                if sn_is_number(subj):
-                    if list2num(subj) >= split_threshold:
-                        right = s[i:]
-                        print("before split at ]: L:{};  S:{};  R:{};".format(
-                            *map(lambda x: ''.join(x), [left, subj, right])))
-                        subj = sn_split_number(list2num(subj))
-                        print("after split at ]: L:{};  S:{};  R:{};".format(
-                            *map(lambda x: ''.join(x), [left, subj, right])))
-                        break
-                    else:
-                        left.extend(subj)
-                        left.append(c)
-                        subj = []
-                else:
-                    left.append(c)
             depth -= 1
+        elif c in '0123456789':
+            target.append(c)
+
+    return ''.join(map(lambda x: ''.join(x), [left, subj, right]))
+
+
+def sn_split_only(sn):
+    split_threshold = 10
+
+    # As we move from left to right through the string, we copy stuff
+    # first to the left list, then subj, then right; join all later.
+    left, subj, right = [], [], []
+
+    for i,c in enumerate(list(sn)):
+        if c == '[':
+            left.append(c)
+        elif c in ',]':
+            if sn_is_simple_number(subj):
+                n = list2num(subj)
+                if n >= split_threshold:
+                    subj = sn_split_number(n)
+                    right = sn[i:]
+                    break
+                else:
+                    left.extend(subj)
+                    left.append(c)
+                    subj = []
+            else:
+                left.append(c)
         elif c in '0123456789':
             subj.append(c)
 
-#    print("L:{};  S:{};  R:{};".format(*map(lambda x: ''.join(x), [left, subj, right])))
     return ''.join(map(lambda x: ''.join(x), [left, subj, right]))
 
 
@@ -313,12 +297,8 @@ def sn_sum_list(l, verbose=False):
     for i,n in enumerate(l):
         if total == None:
             total = n
-#            print("INITIAL: {}".format(total))
         else:
-#            print("      N: {}".format(n))
             new_total = sn_add(total, n)
-#            print("  TOTAL: {}".format(new_total))
-#            print("-- ")
             if verbose:
                 print("{} + {} = {}".format(
                     *map(lambda x: ''.join(x), [total, n, new_total])))
@@ -340,33 +320,35 @@ def trivial_tests(only=None, verbose=False):
             'expected_output': 379,
         },
         {
+            'name': "simple split",
             'input': '[[[[0,7],4],[15,[0,13]]],[1,1]]',
-            'function': sn_explode_or_split,
+            'function': sn_split_only,
             'expected_output': '[[[[0,7],4],[[7,8],[0,13]]],[1,1]]'
         },
         {
+            'name': "simple explode",
             'input': '[[[[[9,8],1],2],3],4]',
-            'function': sn_explode_or_split,
+            'function': sn_explode_only,
             'expected_output': '[[[[0,9],2],3],4]'
         },
         {
             'input': '[7,[6,[5,[4,[3,2]]]]]',
-            'function': sn_explode_or_split,
+            'function': sn_explode_only,
             'expected_output': '[7,[6,[5,[7,0]]]]'
         },
         {
             'input': '[[6,[5,[4,[3,2]]]],1]',
-            'function': sn_explode_or_split,
+            'function': sn_explode_only,
             'expected_output': '[[6,[5,[7,0]]],3]',
         },
         {
             'input': '[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]',
-            'function': sn_explode_or_split,
+            'function': sn_explode_only,
             'expected_output': '[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]',
         },
         {
             'input': '[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]',
-            'function': sn_explode_or_split,
+            'function': sn_explode_only,
             'expected_output': '[[3,[2,[8,0]]],[9,[5,[7,0]]]]',
         },
         {
@@ -416,22 +398,9 @@ def trivial_tests(only=None, verbose=False):
             'expected_output': '[[[[4,0],[5,4]],[[7,7],[6,0]]]]'
         },
         {
-            'name': 'also stupid',
-            'input': '[[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]]',
-            'function': sn_reduce,
-            'expected_output': '[[[8,[7,7]],[[7,9],[5,0]]]]]'
-        },
-        {
-            'name': 'stupid7',
-            'input': '[[14,[[[3,7],[4,3]],[[6,3],[8,8]]]]]',
-            'function': sn_reduce,
-            'expected_output': '[[[8,[7,7]],[[7,9],[5,0]]]]]'
-        },
-        {
             'name': 'sn_add',
             'input': '[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]',
             'function': lambda x: sn_add(x, '[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]'),
-                                             [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
             'expected_output': '[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]',
         },
         {
@@ -542,13 +511,16 @@ def trivial_tests(only=None, verbose=False):
                     print("      for: {}".format(t['input']))
                     print("   wanted: {}".format(t['expected_output']))
                     print("  but got: {}".format(actual_output))
-                print("-- \n")
+                    print("-- \n")
             n_passed += result
 
-    if n_passed == len(tests):
+    n_tests = len(tests)
+    if only != None:
+        n_tests = len(only)
+    if n_passed == n_tests:
         print("All {} trivial tests passed!".format(n_passed))
     else:
-        print("Passed {} out of {} tests :-(".format(n_passed, len(tests)))
+        print("Passed {} out of {} tests :-(".format(n_passed, n_tests))
 
     return n_passed == len(tests)
 
@@ -558,13 +530,9 @@ def get_snailfish_numbers(fh):
 
 
 if __name__ == "__main__":
-
     pp = pprint.PrettyPrinter()
 
-    #if trivial_tests(verbose=True):
-    #if trivial_tests(only=["stupid","also stupid"],verbose=True):
-    #if trivial_tests(only=["sn_add"],verbose=True):
-    if trivial_tests(only=["stupid","also stupid", "stupid7", "sn_add"],verbose=True):
+    if trivial_tests(verbose=False):
         snailfish_numbers = get_snailfish_numbers(sys.stdin)
-        print(sn_sum_list(snailfish_numbers))
-        print(sn_magnitude(sn_sum_list(snailfish_numbers)))
+        print("Magnitude: {}".format(
+            sn_magnitude(sn_sum_list(snailfish_numbers))))
