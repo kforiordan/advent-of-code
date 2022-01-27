@@ -1,8 +1,8 @@
 import sys
-import copy
 import pprint
-from functools import reduce
 from collections import defaultdict
+from functools import reduce
+import itertools
 
 
 # "... every snailfish number is a pair - an ordered list of two
@@ -534,5 +534,9 @@ if __name__ == "__main__":
 
     if trivial_tests(verbose=False):
         snailfish_numbers = get_snailfish_numbers(sys.stdin)
-        print("Magnitude: {}".format(
-            sn_magnitude(sn_sum_list(snailfish_numbers))))
+        magnitude_magnus = -1
+        for p in itertools.permutations(snailfish_numbers, 2):
+            m = sn_magnitude(sn_sum_list(p))
+            if m > magnitude_magnus:
+                magnitude_magnus = m
+        print("Magnitude: {}".format(magnitude_magnus))
