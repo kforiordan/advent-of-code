@@ -14,7 +14,7 @@ def get_reports(fh):
         else:
             m = header.match(line)
             if m is None:
-                reports[scanner_id]['points'].append(line.split(','))
+                reports[scanner_id]['points'].append(tuple(line.split(',')))
             else:
                 scanner_id = int(m.group(1))
                 reports.append({'scanner_id': scanner_id,
@@ -22,11 +22,23 @@ def get_reports(fh):
                                 'points': []})
     return reports
 
+
+# Not straight line distance.
+# Only makes sense for points of same orientation.
+def distance(p1, p2):
+    x1, y1, z1 = tuple(p1)
+    x2, y2, z2 = tuple(p2)
+
+    return abs((x1 - x2) + (y1 - y2) + (z1 - z2))
+
+
 def find_beacons(reports, r=1000, req_match_count=12):
+
     return []
 
 if __name__ == "__main__":
     pp = pprint.PrettyPrinter()
     reports_by_scanner = get_reports(sys.stdin)
+    pp.pprint(reports_by_scanner)
     beacons = find_beacons(reports_by_scanner)
     pp.pprint(beacons)
