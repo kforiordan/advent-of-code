@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-# Counting groups of numbers.
-
-# Generalised a bit: we want the sum of the largest three numbers now.
+# Counting scores for successive games of rock paper scissors.  Turns
+# out the smart solution - which I didn't do - is to encode as ints
+# and do mod 3 comparison.
 
 import sys
 
