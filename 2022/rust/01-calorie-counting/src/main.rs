@@ -6,6 +6,7 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
+fn get_elf_cals(
 fn main() {
     let mut inv = Vec::new();
 
@@ -13,8 +14,12 @@ fn main() {
         // Consumes the iterator, returns an (Optional) String
         for line in lines {
             if let Ok(cals) = line {
+		if 
                 inv.push(cals);
             }
+	    else {
+		println!("a different kind of panic")
+	    }
         }
     } else {
         println!("panic, idk, something");
