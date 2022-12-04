@@ -9,8 +9,7 @@ def contains(assignment1, assignment2):
     (a1a, a1z), (a2a, a2z) = assignment1, assignment2
     return a1a <= a2a and a1z >= a2z
 
-# Reads lists of chars from fh, returns list of tuples, each tuple
-# containing half of a list of chars.
+# Reads lists of chars from fh, returns list of tuples of tuples ...
 def get_assignments(fh):
     assignments = []
 
