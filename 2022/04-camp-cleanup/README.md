@@ -2,7 +2,9 @@
 
 ## Problem Summary
 Each line of input consists of a pair of ranges of positive integers.
+
 Silver: count no. of lines where either range fully contains the other.
+
 Gold: count no. of lines where the ranges overlap.
 
 ## To print the solution
