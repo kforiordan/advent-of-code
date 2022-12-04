@@ -12,5 +12,5 @@ Treat each three lines of input (e.g. lines 1-3, 4-6, etc.) as part of one
 group, find the item common to each group, determine value, sum.
 
 ## To Print Solutions
-- Silver: `cat prod-data | python3 03-rucksack-reorganization-01.py`
-- Gold: `cat prod-data | python3 03-rucksack-reorganization-02.py`
+- Silver: `cat prod-data.txt | python3 03-rucksack-reorganization-01.py`
+- Gold: `cat prod-data.txt | python3 03-rucksack-reorganization-02.py`
