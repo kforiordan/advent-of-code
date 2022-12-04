@@ -13,3 +13,4 @@ of days 21 & 23 - day 23 with pen and paper, so I have a single star for that
 day but nothing in the repo.
 
 ## 2022
+README files in each day's directory show to run the solutions.  Python so far.
