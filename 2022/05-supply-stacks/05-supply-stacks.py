@@ -39,7 +39,7 @@ def get_crates(line):
         stack = line[char_idx:char_idx+3]
         m = item_re.search(stack)
         if m:
-            crates[stack_idx] = m.group(1)
+            crates[str(stack_idx)] = m.group(1)
         stack_idx += 1
         char_idx += 4	# 3 chars for crate, 1 for delimiting space.
 
@@ -56,20 +56,33 @@ def get_moves(fh):
         line = line.rstrip('\n')
         m = move_re.search(line)
         if m:
-            moves.append({"n":m.group(1), "from":m.group(2), "to":m.group(3)})
+            moves.append({"n":int(m.group(1)), "from":m.group(2), "to":m.group(3)})
 
     return moves
+
+
+def apply_moves(stack, moves):
+    for move in moves:
+        apply_move(stack, move)
+    return stack
+
+
+def apply_move(stack, move):
+    if move["n"] == 0:
+        return stack
+    else:
+        c = stack[move["from"]].pop()	# pop the 'from' stack
+        stack[move["to"]].append(c)	# push it onto the 'to' stack
+        move["n"] -= 1
+        return apply_move(stack, move)
 
 
 if __name__ == "__main__":
 
     stacks = get_stacks(sys.stdin)
-    print(stacks)
-    print(f'--------')
     moves = get_moves(sys.stdin)
-    print(moves)
+    stacks = apply_moves(stacks, moves)
 
-    silver = "xzy"
-    #gold = "123"
+    silver = "".join([stacks[k][-1] for k in sorted(stacks)])
+
     print(f'Silver: {silver}')
-    #print(f'Gold: {gold}')
