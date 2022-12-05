@@ -3,6 +3,7 @@
 import sys
 import re
 from collections import deque
+from copy import deepcopy
 
 # Reads diagram of stacks from fh, returns dict of crates per stack.
 def get_stacks(fh):
@@ -61,28 +62,53 @@ def get_moves(fh):
     return moves
 
 
-def apply_moves(stack, moves):
+def apply_moves(stack, moves, move_function=None):
+    if move_function == None:
+        move_function = apply_move_9000
     for move in moves:
-        apply_move(stack, move)
+        move_function(stack, move)
     return stack
 
 
-def apply_move(stack, move):
+def apply_move_9000(stack, move):
     if move["n"] == 0:
         return stack
     else:
         c = stack[move["from"]].pop()	# pop the 'from' stack
         stack[move["to"]].append(c)	# push it onto the 'to' stack
         move["n"] -= 1
-        return apply_move(stack, move)
+        return apply_move_9000(stack, move)
+
+
+# I probably should have just used list slices and .append(), but here
+# we are.
+def apply_move_9001(stack, move, crane=None):
+    if move["n"] == 0:
+        if len(crane) == 0:
+            return stack
+        else:
+            c = crane.pop()		# pop crate from the crane and
+            stack[move["to"]].append(c)	# push it onto the 'to' stack
+            return apply_move_9001(stack, move, crane)
+    else:
+        c = stack[move["from"]].pop()	# pop the 'from' stack
+        if crane == None:
+            crane = []
+        crane.append(c)			# push this crate to the crane
+        move["n"] -= 1
+        return apply_move_9001(stack, move, crane)
 
 
 if __name__ == "__main__":
 
     stacks = get_stacks(sys.stdin)
     moves = get_moves(sys.stdin)
-    stacks = apply_moves(stacks, moves)
 
-    silver = "".join([stacks[k][-1] for k in sorted(stacks)])
+    silver_stacks = apply_moves(deepcopy(stacks), deepcopy(moves))
+    silver = "".join([silver_stacks[k][-1] for k in sorted(silver_stacks)])
+
+    gold_stacks = apply_moves(stacks, moves, apply_move_9001)
+    gold = "".join([gold_stacks[k][-1] for k in sorted(gold_stacks)])
 
     print(f'Silver: {silver}')
+    print(f'Gold: {gold}')
