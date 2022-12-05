@@ -14,5 +14,6 @@ instruction might say to move >1 crates, but only one crate at a time could be
 moved; part 2 allows multiple crates to be moved at once.
 
 ## To Print Solutions
-  - Silver: `cat prod-data.txt | python 05-supply-stacks-01.py`
-  - Gold: `cat prod-data.txt | python 05-supply-stacks-02.py`
+`cat prod-data.txt | python 05-supply-stacks.py`
+
+Silver and gold solutions are both printed.
