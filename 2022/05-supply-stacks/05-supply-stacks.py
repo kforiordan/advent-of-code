@@ -80,7 +80,7 @@ def apply_move_9000(stack, move):
         return apply_move_9000(stack, move)
 
 
-# I probably should have just used list slices and .append(), but here
+# I probably should have just used list slices and .extend(), but here
 # we are.
 def apply_move_9001(stack, move, crane=None):
     if move["n"] == 0:
