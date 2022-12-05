@@ -52,7 +52,6 @@ def get_moves(fh):
     moves = []
 
     move_re = re.compile('^move ([0-9]+) from (\S+) to (\S+)$')
-    n = 0
     for line in fh:
         line = line.rstrip('\n')
         m = move_re.search(line)
