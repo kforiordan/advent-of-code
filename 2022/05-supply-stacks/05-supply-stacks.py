@@ -2,24 +2,32 @@
 
 import sys
 import re
+from collections import deque
 
-# Reads lists of chars from fh, returns list of tuples of tuples ...
-def get_crate_stacks(fh):
-    stacks = []
+# Reads diagram of stacks from fh, returns dict of crates per stack.
+def get_stacks(fh):
+    stacks = {}
 
     for line in fh:
         line = line.rstrip('\n')
-        #[Z] [M] [P]
+        #[Z] [M] [P] <- a typical line of input.  It is left padded to
+        # a uniform length, and from that length you could determine
+        # the number of stacks (int((length+1)/4) but I'm going to
+        # ignore that because I hate the idea of relying on
+        # whitespace, especially copy&pasted whitespace.
         crates = get_crates(line)
-        print(crates)
-        exit(0)
+        for s, c in crates.items():
+            if s in stacks:
+                stacks[s].appendleft(c)
+            else:
+                stacks[s] = deque(c)
         if line == "":
             break
-        stacks.append(line)
 
     return stacks
 
 
+# Returns stack-indexed dict of crates found on given line
 def get_crates(line):
     crates = {}
 
@@ -30,7 +38,6 @@ def get_crates(line):
         line = line.rstrip(' \n')
         stack = line[char_idx:char_idx+3]
         m = item_re.search(stack)
-        print(f'^{stack}$')
         if m:
             crates[stack_idx] = m.group(1)
         stack_idx += 1
@@ -39,20 +46,28 @@ def get_crates(line):
     return crates
 
 
+# From fh, reads and parses move instructions
 def get_moves(fh):
     moves = []
 
+    move_re = re.compile('^move ([0-9]+) from (\S+) to (\S+)$')
+    n = 0
     for line in fh:
         line = line.rstrip('\n')
-        moves.append(line)
+        m = move_re.search(line)
+        if m:
+            moves.append({"n":m.group(1), "from":m.group(2), "to":m.group(3)})
 
     return moves
 
 
 if __name__ == "__main__":
 
-    stacks = get_crate_stacks(sys.stdin)
+    stacks = get_stacks(sys.stdin)
+    print(stacks)
+    print(f'--------')
     moves = get_moves(sys.stdin)
+    print(moves)
 
     silver = "xzy"
     #gold = "123"
