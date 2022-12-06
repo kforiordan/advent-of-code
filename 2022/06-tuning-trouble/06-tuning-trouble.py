@@ -8,10 +8,6 @@ def get_message_buffers(fh):
 
 
 def is_unique(s, flag_len=4):
-    if len(s) != flag_len:
-        print(f'flag length is {len(s)}, should be {flag_len}')
-        return False
-
     dup_found=False
     i=0
     while i < flag_len:
