@@ -36,19 +36,33 @@ def is_unique(s, flag_len=4):
     return not dup_found
 
 
+def find_start(message_buffer, flag_len=4):
+
+    message_start_index = None
+    buffer_len = len(message_buffer)
+    i = 0
+    while i < (buffer_len + flag_len - 1):
+        if is_unique(message_buffer[i:i+flag_len], flag_len):
+            message_start_index = i + flag_len
+            break
+        i += 1
+
+    return message_start_index
+
+
 if __name__ == "__main__":
 
     message_buffers = get_message_buffers(sys.stdin)
 
-    flag_len = 4	# The flag is 4 consecutive unique chars
-    for message_buffer in message_buffers:
-        message_start_index = None
-        buffer_len = len(message_buffer)
-        i = 0
-        while i < (buffer_len + flag_len - 1):
-            if is_unique(message_buffer[i:i+flag_len]):
-                message_start_index = i + flag_len
-                break
-            i += 1
-        m = message_buffer[0:13]
-        print(f'Silver: {m}... -> {message_start_index}')
+    silver_flag_len = 4
+    gold_flag_len = 14
+
+    for mb in message_buffers:
+        start = find_start(mb, silver_flag_len)
+        m = mb[0:13]
+        print(f'Silver: {m}... -> {start}')
+
+    for mb in message_buffers:
+        start = find_start(mb, gold_flag_len)
+        m = mb[0:13]
+        print(f'Gold: {m}... -> {start}')
