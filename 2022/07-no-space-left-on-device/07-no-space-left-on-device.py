@@ -33,6 +33,13 @@ class ElfDir(ElfFile):
         else:
             self.content = content
 
+    def __repr__(self):
+        annotate_name = lambda ef: is_elf_dir(ef) and f'{ef.name}/' or ef.name
+        names = [annotate_name(f) for f in self.content]
+        names_str = ", ".join(names)
+        return(f'ElfDir(name={self.name}, content=[{names_str}])')
+
+def is_elf_dir(f):
+    return isinstance(f, ElfDir)
 
 if __name__ == "__main__":
-    
