@@ -16,3 +16,7 @@ least 30,000,000 units of storage available.
 `cat prod-data.txt | python 07-no-space-left-on-device.py`
 
 Silver and gold solutions are both printed
+
+## Note
+This is a pretty terrible script, and it's about four or so times longer than
+some of the neater solutions I've seen.
