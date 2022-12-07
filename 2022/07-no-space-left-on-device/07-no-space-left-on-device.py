@@ -168,5 +168,15 @@ if __name__ == "__main__":
     # THIS IS HORRIBLE HAHAHAHAHAHAHAH I SUCK AT PROGRAMMING
     dh = {}	# SORRY
     lol(fs)
-    print(sum([x for x in dh.values() if x < 100000]))
+    print("Silver: {}".format(sum([x for x in dh.values() if x < 100000])))
 
+    # AND NOW FOR A SOLID GOLD SOLUTION
+    total_storage = 70000000
+    min_required_available = 30000000
+    max_usage_allowed = total_storage - min_required_available
+    current_usage = dh["///"]	# OH NO
+    current_unused = total_storage - current_usage
+    required_min_delete_size = min_required_available - current_unused
+    print("Gold: {}".format(sorted([x for x in dh.values() if x > required_min_delete_size])[0]))
+
+    # Moral: you should not see how the sausage is made.
