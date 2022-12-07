@@ -36,6 +36,8 @@ class ElfDir(ElfFile):
 
     def __init__(self, name, content=None):
         super().__init__(name)
+        if name == '/':
+            self.parent = self
         if content == None:
             self.content = []
         else:
@@ -99,12 +101,13 @@ def build_fs(fh):
                     new_file = ElfDir(name)
                 else:
                     size = m.group(1)
-                    new_file = ElfRegularFile(name, size)
+                    new_file = ElfRegularFile(name, int(size))
                 cwd.add(new_file)
 
     return fs
 
 
+# depth first, not exactly pre-order
 def fs_walk(fs, fn, depth=0):
     if fs.name == '/':
         fn(fs, depth)
@@ -113,6 +116,34 @@ def fs_walk(fs, fn, depth=0):
         fn(ef, depth+1)
         if ef.is_dir():
             fs_walk(ef, fn, depth+1)
+
+
+def fs_walk_postorder(fs, fn, depth=0):
+    result = []
+
+    for ef in fs.content:
+        if ef.is_dir():
+            result.extend(fs_walk_postorder(ef, fn, depth+1))
+        result.append(fn(ef, depth))
+
+    # if fs.name == '/':
+    #     result.extend(fs_walk_postorder(ef,fn, depth+1))
+
+    return result
+
+
+def lol(fs):
+    dir_size = 0
+
+    if fs.is_dir():
+        for ef in fs.content:
+            dir_size += lol(ef)
+
+        dh["{}/{}".format(fs.parent.name, fs.name)] = dir_size
+        return dir_size
+    else:
+        return fs.size
+
 
 def custom_print(ef, depth, indent="  "):
     bullet = "- "
@@ -132,4 +163,10 @@ def aoc_print(ef, depth, indent="  "):
 
 if __name__ == "__main__":
     fs = build_fs(sys.stdin)
-    fs_walk(fs, aoc_print)
+    #fs_walk(fs, aoc_print)
+
+    # THIS IS HORRIBLE HAHAHAHAHAHAHAH I SUCK AT PROGRAMMING
+    dh = {}	# SORRY
+    lol(fs)
+    print(sum([x for x in dh.values() if x < 100000]))
+
