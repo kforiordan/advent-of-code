@@ -12,6 +12,9 @@ class ElfFile:
     def __repr__(self):
         return(f'ElfFile(name={self.name})')
 
+    def is_dir(self):
+        return None
+
 
 class ElfRegularFile(ElfFile):
     size: int
@@ -22,6 +25,9 @@ class ElfRegularFile(ElfFile):
 
     def __repr__(self):
         return(f'ElfRegularFile(name={self.name}, size={self.size})')
+
+    def is_dir(self):
+        return False
 
 
 class ElfDir(ElfFile):
@@ -36,25 +42,29 @@ class ElfDir(ElfFile):
             self.content = content
 
     def __repr__(self):
-        annotate_name = lambda ef: is_elf_dir(ef) and f'{ef.name}/' or ef.name
+        annotate_name = lambda ef: ef.is_dir() and f'{ef.name}/' or ef.name
         names_str = ", ".join([annotate_name(f) for f in self.content])
         return(f'ElfDir(name={self.name}, content=[{names_str}])')
 
+    def is_dir(self):
+        return True
+
     def find_by_name(self, elf_file_name:str):
-        for ef in self.content:
-            if elf_file_name == ef.name:
-                return ef
+        if elf_file_name == '.':
+            return self
+        elif elf_file_name == '..':
+            return self.parent
+        else:
+            for ef in self.content:
+                if elf_file_name == ef.name:
+                    return ef
         return None
 
     def add(self, elf_file:ElfFile):
         if not self.find_by_name(elf_file.name):
-            if is_elf_dir(elf_file):
+            if elf_file.is_dir():
                 elf_file.parent = self
             self.content.append(elf_file)
-
-
-def is_elf_dir(f):
-    return isinstance(f, ElfDir)
 
 
 def build_fs(fh):
@@ -77,9 +87,8 @@ def build_fs(fh):
                 cmd = m.group(1)
                 if cmd == 'cd':
                     elf_dir_name = m.group(2)
-                    print(repr(cwd))
-                    if cwd.find_by_name(elf_dir_name):
-                        print("find {} worked".format(elf_dir_name))
+                    # Not handling error cases
+                    cwd = cwd.find_by_name(elf_dir_name)
                 elif cmd == 'ls':
                     # ls doesn't require us to do anything, tbh.
                     continue
@@ -93,9 +102,34 @@ def build_fs(fh):
                     new_file = ElfRegularFile(name, size)
                 cwd.add(new_file)
 
-
     return fs
+
+
+def fs_walk(fs, fn, depth=0):
+    if fs.name == '/':
+        fn(fs, depth)
+
+    for ef in fs.content:
+        fn(ef, depth+1)
+        if ef.is_dir():
+            fs_walk(ef, fn, depth+1)
+
+def custom_print(ef, depth, indent="  "):
+    bullet = "- "
+    indent_str = "".join([indent for _ in range(0, depth)])
+    print("{}{}{}".format(indent_str, bullet, repr(fs)))
+
+
+def aoc_print(ef, depth, indent="  "):
+    bullet = "- "
+    indent_str = "".join([indent for _ in range(0, depth)])
+    if ef.is_dir():
+        ef_info = "{} (dir)".format(ef.name)
+    else:
+        ef_info = "{} (file, size={})".format(ef.name, ef.size)
+    print("{}{}{}".format(indent_str, bullet, ef_info))
 
 
 if __name__ == "__main__":
     fs = build_fs(sys.stdin)
+    fs_walk(fs, aoc_print)
