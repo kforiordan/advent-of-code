@@ -1,4 +1,3 @@
-
 # 2022, day 7: No Space Left on Device
 
 ## Problem Summary
