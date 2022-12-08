@@ -16,3 +16,8 @@ multiply these numbers, report the largest such score.
 `cat prod-data.txt | python 08-treetop-tree-house.py`
 
 Silver and gold solutions are both printed
+
+## Note
+For both solutions I checked all elements of the grid but, for different
+reasons, there was no need to check the edge in ether case.  This is a simple
+optimisation, but there are no points for runtime speed, so I'm not doing it.
