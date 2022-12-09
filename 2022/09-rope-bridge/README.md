@@ -8,9 +8,12 @@ As the head moves, the tail follows according to a few rules.
 Count the number of unique grid points the tail visits.
 
 ### Gold
+Consider a longer rope - instead of just a head and tail, there are eight more
+knots in between.  Each knot follows the same rules as for part 1, moving
+relative to the knot preceding it.  Again, count the unique grid points the
+tail visits.
 
-## To Print Solutions
+## To Print Solution
 `cat prod-data.txt | python 09-rope-bridge.py`
 
 Silver and gold solutions are both printed
-
