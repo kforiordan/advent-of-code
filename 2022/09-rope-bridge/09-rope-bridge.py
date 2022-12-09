@@ -90,6 +90,11 @@ if __name__ == "__main__":
     # Part 2 is similar to part 1, but the rope has ten knots in it
     # instead of two; each knot moves according to the same rules
     # though.
+    #
+    # Extending the solution to ten knots is not too tricky, then we
+    # just have to record the points for knot 1 (silver tail) and knot
+    # 9 (gold tail) separately.
+    #
     gold_rope_len = 10
     rope = [Point(0,0) for i in range(0,gold_rope_len)]
 
