@@ -14,8 +14,6 @@ relative to the knot preceding it.  Again, count the unique grid points the
 tail visits.
 
 ## To Print Solution
-- Silver: `cat prod-data.txt | python 09-rope-bridge-01.py`
-- Gold: `cat prod-data.txt | python 09-rope-bridge-02.py`
+`cat prod-data.txt | python 09-rope-bridge.py`
 
 Silver and gold solutions are both printed
-
