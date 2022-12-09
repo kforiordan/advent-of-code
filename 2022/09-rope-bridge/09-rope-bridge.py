@@ -75,30 +75,38 @@ def get_instructions(fh):
     return [massage(line.rstrip('\n').split(' ')) for line in fh]
 
 
-# There must be a better way of doing this than with a global variable?
-tail_positions = {}
-def record_point(point:Point):
+def record_point(ledger, point:Point):
     historical_point = deepcopy(point)
-    if historical_point in tail_positions:
-        tail_positions[historical_point] += 1
+    if historical_point in ledger:
+        ledger[historical_point] += 1
     else:
-        tail_positions[historical_point] = 1
+        ledger[historical_point] = 1
 
 
 if __name__ == "__main__":
     instructions = get_instructions(sys.stdin)
 
     # These are given in the puzzle spec, not in the puzzle input.
-    head = Point(0,0)
-    tail = Point(0,0)
-    record_point(tail)
+    # Part 2 is similar to part 1, but the rope has ten knots in it
+    # instead of two; each knot moves according to the same rules
+    # though.
+    gold_rope_len = 10
+    rope = [Point(0,0) for i in range(0,gold_rope_len)]
+
+    ledger = {"silver":{}, "gold":{}}
+    record_point(ledger["silver"],rope[-1])
+    record_point(ledger["gold"],rope[-1])
 
     for (direction, distance) in instructions:
         for i in range(0, distance):
-            head.move(direction)
-            if not tail.is_touching(head):
-                tail.move_to(head)
-                record_point(tail)
+            rope[0].move(direction)
+            for k in range(1, gold_rope_len):
+                if not rope[k].is_touching(rope[k-1]):
+                    rope[k].move_to(rope[k-1])
+                    if k == 1:
+                        record_point(ledger["silver"], rope[k])
+                    elif k == gold_rope_len - 1:
+                        record_point(ledger["gold"], rope[k])
 
-    print("Silver: {}".format(len(tail_positions.keys())))
-    # print("Gold: {}".format(sorted(scores)[-1]))
+    print("Silver: {}".format(len(ledger["silver"].keys())))
+    print("Gold: {}".format(len(ledger["gold"].keys())))
