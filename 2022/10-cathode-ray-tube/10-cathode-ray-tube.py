@@ -29,6 +29,11 @@ if __name__ == "__main__":
         elif cmd == 'addx':
             cycle += addx_cycles
 
+        # This will fail if any addx instruction changes the strength
+        # by more than 40 units, but our production data has nothing
+        # greater than 40 so, bearing YAGNI in mind, I'm leaving this
+        # barely sufficient implementation in place.
+        #
         if int((cycle + 20) / 40) > sample_count:
             sample_cycle = (int((cycle + 20) / 40) * 40) - 20
             strengths.append(sample_cycle * strength)
