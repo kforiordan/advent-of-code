@@ -16,32 +16,43 @@ if __name__ == "__main__":
     addx_cycles = 2
     noop_cycles = 1
     cycle = 0
-    strength = 1
-    strengths = []
+    register_x = 1
 
+    strengths = []
     sample_count = 0
+
+    pixels = []
+    sprite_position = 1 # middle of sprite, actually 0 & 2 also.
 
     for line in sys.stdin:
         line = line.rstrip('\n')
         cmd = line[0:4]
+        cmd_arg = None
         if cmd == 'noop':
-            cycle += noop_cycles
+            op_cycles = noop_cycles
         elif cmd == 'addx':
-            cycle += addx_cycles
+            op_cycles = addx_cycles
+            cmd_arg = int(line[5:])
 
-        # This will fail if any addx instruction changes the strength
-        # by more than 40 units, but our production data has nothing
-        # greater than 40 so, bearing YAGNI in mind, I'm leaving this
-        # barely sufficient implementation in place.
-        #
-        if int((cycle + 20) / 40) > sample_count:
-            sample_cycle = (int((cycle + 20) / 40) * 40) - 20
-            strengths.append(sample_cycle * strength)
-            sample_count += 1
+        # "... the CRT draws a single pixel during each cycle ...
+        lit_pixel = "#"
+        dark_pixel = " "  # In the spec this is '.', but space is more readable.
+        for i in range(0, op_cycles):
+            if abs(cycle % 40 - register_x) <= 1:
+                pixels.append(lit_pixel)
+            else:
+                pixels.append(dark_pixel)
+            cycle += 1
+            if int((cycle + 20) / 40) > sample_count:
+                sample_cycle = (int((cycle + 20) / 40) * 40) - 20
+                strengths.append(sample_cycle * register_x)
+                sample_count += 1
+            if cycle % 40 == 0:
+                pixels.append('\n')
 
         if cmd == 'addx':
-            arg = int(line[5:])
-            strength += arg
+            register_x += cmd_arg
 
     print("Silver: {}".format(sum(strengths)))
-#    print("Gold: {}".format(len(ledger["gold"].keys())))
+    print("Gold:")
+    print("".join(pixels))
