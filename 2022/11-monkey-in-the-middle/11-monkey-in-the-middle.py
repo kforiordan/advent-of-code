@@ -3,6 +3,7 @@
 import sys
 from collections import deque
 from copy import deepcopy
+from functools import reduce
 
 class Monkey:
     _monkey_str = "Monkey"
@@ -66,6 +67,9 @@ class Monkey:
 
         if self.allow_relief:
             item = self.relieve(item)
+        else:
+            if item > max_worry:
+                item = item % max_worry
 
         if self.apply_test(item):
             self.throw_item(item, self.if_true)
@@ -122,10 +126,25 @@ if __name__ == "__main__":
     print("Silver: {}".format(monkey_business))
 
     # Gold
+    tests = []
     for monkey in gold_monkeys:
         monkey.monkeys = gold_monkeys
         monkey.allow_relief = False
-    n_rounds = 20
+        tests.append(monkey.test)
+
+    # There was a clue in the problem spec: "Unfortunately, that
+    # relief was all that was keeping your worry levels from reaching
+    # ridiculous levels. You'll need to find another way to keep your
+    # worry levels manageable."
+    #
+    # I figured it was just the massive sums that were causing
+    # performance issues, so I worked out how to keep the worry level
+    # to a reasonable number.
+    max_worry = reduce(lambda x, y: x *  y, tests, 1)
+    for monkey in gold_monkeys:
+        monkey.max_worry = max_worry
+
+    n_rounds = 10000
     for round in range(1, n_rounds+1):
         for monkey in gold_monkeys:
             monkey.inspect_all()
