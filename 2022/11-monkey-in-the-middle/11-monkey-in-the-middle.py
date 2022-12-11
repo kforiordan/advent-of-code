@@ -2,6 +2,7 @@
 
 import sys
 from collections import deque
+from copy import deepcopy
 
 class Monkey:
     _monkey_str = "Monkey"
@@ -27,6 +28,7 @@ class Monkey:
             elif line[0:len(self._iff_str)] == self._iff_str:
                 self.if_false = int(line[len(self._iff_str):])
         self.inspection_count = 0
+        self.allow_relief = True
 
     def relieve(self, item):
         # "... our relief that the monkey's inspection didn't damage
@@ -62,7 +64,8 @@ class Monkey:
         # Increase worry level according to self.operation
         item = self.apply_operation(item)
 
-        item = self.relieve(item)
+        if self.allow_relief:
+            item = self.relieve(item)
 
         if self.apply_test(item):
             self.throw_item(item, self.if_true)
@@ -106,12 +109,26 @@ def get_monkeys(fh):
 
 if __name__ == "__main__":
 
-    monkeys = get_monkeys(sys.stdin)
+    silver_monkeys = get_monkeys(sys.stdin)
+    gold_monkeys = deepcopy(silver_monkeys)
+
+    # Silver
     n_rounds = 20
     for round in range(1, n_rounds+1):
-        for monkey in monkeys:
+        for monkey in silver_monkeys:
             monkey.inspect_all()
-
-    inspection_counts = sorted(map(lambda m: m.inspection_count, monkeys))
+    inspection_counts = sorted(map(lambda m: m.inspection_count, silver_monkeys))
     monkey_business = inspection_counts[-1] * inspection_counts[-2]
     print("Silver: {}".format(monkey_business))
+
+    # Gold
+    for monkey in gold_monkeys:
+        monkey.monkeys = gold_monkeys
+        monkey.allow_relief = False
+    n_rounds = 20
+    for round in range(1, n_rounds+1):
+        for monkey in gold_monkeys:
+            monkey.inspect_all()
+    inspection_counts = sorted(map(lambda m: m.inspection_count, gold_monkeys))
+    monkey_business = inspection_counts[-1] * inspection_counts[-2]
+    print("Gold: {}".format(monkey_business))
