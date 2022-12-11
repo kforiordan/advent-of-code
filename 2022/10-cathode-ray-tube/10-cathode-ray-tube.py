@@ -5,7 +5,6 @@ from functools import reduce
 from copy import deepcopy
 
 
-# Borrowed from 2021's day 13 solution
 if __name__ == "__main__":
 
     # "... consider the signal strength (the cycle number multiplied
