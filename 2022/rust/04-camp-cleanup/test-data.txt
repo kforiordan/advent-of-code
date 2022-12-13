@@ -1,1 +1,0 @@
-../../04-camp-cleanup/test-data.txt
