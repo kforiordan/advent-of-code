@@ -23,10 +23,6 @@ def get_pairs(fh):
     return pairs
 
 
-def is_list(s):
-    s[0] == "[" and s[-1] == "]"
-
-
 # "Each list starts with [, ends with ], and contains zero or more
 # comma-separated values (either integers or other lists)."
 #
@@ -74,7 +70,6 @@ def values(s):
 
 # Given two lists of signal components, returns -1 if left < right; else 1 ... or 0
 def compare(left, right):
-#    print("GOTHERE: {} -- {}".format(left, right))
     if isinstance(left, list) and isinstance(right, list):
         if left == []:
             if right == []:
@@ -85,14 +80,12 @@ def compare(left, right):
             return 1
         else:
             # Two non-empty lists: 
-#            print("HERETOO: {} -- {}".format(left, right))
             corollary = compare(left[0], right[0])
             if corollary == 0:
                 return compare(left[1:], right[1:])
             else:
                 return corollary
     elif isinstance(left, int) and isinstance(right, int):
-#        print("ANDHERE: {} -- {}".format(left, right))
         if left < right:
             return -1
         elif left > right:
