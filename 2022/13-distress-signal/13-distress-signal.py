@@ -2,6 +2,7 @@
 
 import sys
 import re
+from functools import reduce, cmp_to_key
 
 # Returns list of two strings, each of which is a signal.
 def get_pairs(fh):
@@ -113,4 +114,17 @@ def compare(left, right):
 
 if __name__ == "__main__":
     pairs = get_pairs(sys.stdin)
-    print("Silver: {}".format(sum([(i+1) for i, pair in enumerate(pairs) if compare(pair[0], pair[1]) == -1])))
+    ordered_pair_indices = [(i+1) for i,pair in enumerate(pairs) if compare(pair[0], pair[1]) == -1]
+    print("Silver: {}".format(sum(ordered_pair_indices)))
+
+    packets = []
+    for p in pairs:
+        packets.append(p[0])
+        packets.append(p[1])
+    # Now add the magic divider packets:
+    packets.append([[2]])
+    packets.append([[6]])
+
+    sorted_packets = sorted(packets, key=cmp_to_key(compare))
+    divider_packet_indices = [(i+1) for i,p in enumerate(sorted_packets) if p == [[2]] or p == [[6]]]
+    print("Gold: {}".format(reduce(lambda a,b: a*b, divider_packet_indices, 1)))
