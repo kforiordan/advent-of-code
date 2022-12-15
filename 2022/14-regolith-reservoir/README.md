@@ -9,10 +9,6 @@ lines act as barriers.
 Report how many units of sand accumulate before excess overflows.
 
 ### Gold
-Add another barrier - a floor with y equal to the largest y value of any
-barrier point in the input data plus two.  Now run the simulation again
-stopping when sand accumulates to such a volume that it reaches the sand source
-point.  Again, report how many units of sand accumulate.
 
 ## To Print Solution
 `cat prod-data.txt | python 14-regolith-reservoir.py`
