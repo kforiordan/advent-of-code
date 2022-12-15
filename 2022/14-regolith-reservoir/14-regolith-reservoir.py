@@ -65,11 +65,15 @@ def fall_once(sand):
     downright = {"y": sand["y"]+1, "x": sand["x"]+1}
     for n in [down, downleft, downright]:
         if is_empty(n):
+            pre_rest_position = sand
             return n
     return sand
 
 
 def fall(sand):
+    # Optimisation: we always fall to a position one up from the previous.
+    if pre_rest_position != None:
+        pos = pre_rest_position
     pos = fall_once(sand)
     if pos["y"] == sand["y"] and pos["x"] == sand["x"]:
         # Falling was blocked by something.
@@ -89,6 +93,7 @@ if __name__ == "__main__":
     sand_start = {"y":0, "x":500}
     sand_points = []
 
+    pre_rest_position = None
     rest = fall(sand_start)
     while rest != None:
         sand_points.append(rest)
