@@ -100,3 +100,19 @@ if __name__ == "__main__":
         rest = fall(sand_start)
 
     print("Silver: {}".format(len(sand_points)))
+
+
+    # Gold time, oh no.
+
+    # First, add a long barrier below the lowest.
+    # Also update max xs and y to get correct results from
+    # falling_into_the_endless_void()
+    max_y = max_y + 2
+    min_x = min_x - 1000 # Should be -∞
+    max_x = max_x + 1000 # Should be ∞
+    barriers.append([{"x":min_x, "y":max_y}, {"x":max_x, "y":max_y}])
+
+    # Now run the simulation again, but with a different final condition:
+    sand_points = []
+    # ...
+    print("Gold: {}".format(len(sand_points)))
