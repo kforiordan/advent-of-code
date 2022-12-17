@@ -22,8 +22,12 @@ def get_hill_map(fh):
 
 
 # I'm going to try to get comfortable with using global vars.
-def assign(p, label):
+# args: p:{"x","y"}, label:({"x","y"}, dist)
+def set_label(p, label):
     labels[p["y"]][p["x"]] = label
+
+def get_label(p):
+    return labels[p["y"]][p["x"]]
 
 def adjacent(pos):
     min_y = min_x = 0
@@ -51,6 +55,7 @@ def adjacent(pos):
 def unlabelled(vs):
     return [v for v in vs if labels[v["y"]][v["x"]] == None]
 
+
 def labelled_vertices():
     l = []
     for y in range(0,len(hill_map)):
@@ -59,6 +64,7 @@ def labelled_vertices():
                 l.append({"y":y, "x":x})
     return l
 
+
 if __name__ == "__main__":
     hill_map, start, end = get_hill_map(sys.stdin)
     labels = [[None for x in range(0,len(hill_map[y]))]
@@ -66,24 +72,32 @@ if __name__ == "__main__":
 
     pos = start
 
+
     # Dijkstra's algorithm, from Goodaire and Parmenter.  I
     # implemented this last year for day 15 of AoC, but it seems my
     # solution ran very slowly.  I'm trying again.
 
     # "To find the shortest path from vertex A to vertex E ...
     # Step 1.  Assign to A the label (-,0)"
-    assign(pos, (None,0))
+    # Label assigned is a tuple of the preceding node and the distance from A.
+    set_label(pos, (None,0))
 
     # "Step 2.  For each labeled vertex u(x,d) and for each unlabeled
     # vertex v adjacent to u, compute d+w(e) where e = uv"
-    for i in range(0,20):
-        for v in labelled_vertices():
-            lowest = None
-            for v in unlabelled(adjacent(v)):
-                if lowest == None:
-                    lowest = v
-            if lowest != None:
-                assign(lowest, (v,1))	# this is wrong
+    while get_label(end) == None:
+        lowest = None
+        for u in labelled_vertices():
+            for v in unlabelled(adjacent(u)):
+                if lowest == None or get_label(u)[1]+1 < lowest[2]:
+                    lowest = (u, v, get_label(u)[1] + 1)
+        set_label(lowest[1], (lowest[0], lowest[2]))
 
-    print("------------")
-    print(labels)
+    # Ok, we've found the optimum path, now reconstruct it and count the steps.
+    path = []
+    pos = end
+    while pos != start:
+        path.append(pos)
+        pos = get_label(pos)[0]
+
+    print("Silver: {}".format(len(path)))
+
