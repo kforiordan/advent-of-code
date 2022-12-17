@@ -52,6 +52,30 @@ def adjacent(pos):
             hill_map[p["y"]][p["x"]] - hill_map[pos["y"]][pos["x"]] <= 1]
 
 
+def uphill_adjacent(pos):
+    min_y = min_x = 0
+    max_y = len(hill_map)-1
+    max_x = len(hill_map[0])-1  # Assuming square map.
+
+    # "During each step, you can move exactly one square up, down, left,
+    # or right ..."
+    candidates = []
+    if pos["y"]-1 >= min_y:
+        candidates.append({"y":pos["y"]-1, "x":pos["x"]})
+    if pos["x"]-1 >= min_x:
+        candidates.append({"y":pos["y"], "x":pos["x"]-1})
+    if pos["y"]+1 <= max_y:
+        candidates.append({"y":pos["y"]+1, "x":pos["x"]})
+    if pos["x"]+1 <= max_x:
+        candidates.append({"y":pos["y"], "x":pos["x"]+1})
+
+    # Inverse of this rule:
+    #   "... the elevation of the destination square can be at most
+    #    one higher than the elevation of your current square"
+    return [p for p in candidates if
+            hill_map[pos["y"]][pos["x"]] - hill_map[p["y"]][p["x"]] <= 1]
+
+
 def unlabelled(vs):
     return [v for v in vs if labels[v["y"]][v["x"]] == None]
 
@@ -100,4 +124,28 @@ if __name__ == "__main__":
         pos = get_label(pos)[0]
 
     print("Silver: {}".format(len(path)))
+
+
+    labels = [[None for x in range(0,len(hill_map[y]))]
+              for y in range(0,len(hill_map))]
+    set_label(end, (None,0))
+
+    # "Step 2.  For each labeled vertex u(x,d) and for each unlabeled
+    # vertex v adjacent to u, compute d+w(e) where e = uv"
+    pos = end
+    while hill_map[pos["y"]][pos["x"]] != ord("a"):
+        lowest = None
+        for u in labelled_vertices():
+            for v in unlabelled(uphill_adjacent(u)):
+                if lowest == None or get_label(u)[1]+1 < lowest[2]:
+                    lowest = (u, v, get_label(u)[1] + 1)
+        set_label(lowest[1], (lowest[0], lowest[2]))
+        pos = lowest[1]
+
+    path = []
+    while pos != end:
+        path.append(pos)
+        pos = get_label(pos)[0]
+
+    print("Gold: {}".format(len(path)))
 
