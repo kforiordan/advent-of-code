@@ -154,10 +154,14 @@ class CircularList:
                 j -= 1
             pos = pos.get_succ()
 
-    def move(self, x):
-        return x
+    def move_node_i(self, i):
+        self.get_node_i(i).move(self.get_node_i(i).get_val())
 
-    # This is a very weak check.  False indicates disaster, but True
+    def move_node(self, node):
+        
+        self.swap_nodes(
+
+    # This is a poor check.  False indicates disaster, but True
     # doesn't tell us much.
     def vals_ok(self):
         ordered_vals = self.get_vals()
@@ -178,17 +182,16 @@ if __name__ == "__main__":
 
     clist = CircularList(numbers)
 
-    print(clist.get_vals())
+    print(".get_vals(): {}".format(clist.get_vals()))
+    print("Nodes:")
     for n in clist.get_nodes():
-        print(n)
+        print("  {}".format(n))
     print("-- ")
 
-    for n in numbers:
-        clist.move(n)
+    clist.move_node_i(0)
 
-    print(clist.get_vals())
+    print(".get_vals(): {}".format(clist.get_vals()))
+    print("Nodes:")
     for n in clist.get_nodes():
-        print(n)
+        print("  {}".format(n))
     print("-- ")
-
-    print(clist.get_node_i(3))
