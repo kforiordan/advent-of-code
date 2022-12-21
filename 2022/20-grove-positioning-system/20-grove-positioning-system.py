@@ -105,15 +105,42 @@ class CircularList:
 
         if vals != None and vals != []:
             self.head = Node(vals[0])
+            self.length = 1
             self.orig_vals = [v for v in vals]
             self.tail = self.head
             pos = self.head
             for v in vals[1:]:
                 pos.attach(Node(v))
-                self.orig_vals.append(v)
                 self.length += 1
                 pos = pos.get_succ()
             self.tail = pos.get_pred()
+
+    def __repr__(self):
+        ok_msg = "idk"
+        if self.vals_ok():
+            ok_msg = "looks ok, I guess"
+        else:
+            ok_msg = ">> SOMETHING IS VERY WRONG <<"
+        indent = "    "
+        nodes = []
+        pos = self.head
+        while True:
+            nodes.append("{}{}{},".format(indent, indent, pos.__repr__()))
+            pos = pos.get_succ()
+            if pos == self.head:
+                break
+        nodes_str = "\n".join(nodes)
+        return "\n".join([
+            "CircularList(",
+            "{}head={},".format(indent, self.head),
+            "{}tail={},".format(indent, self.tail),
+            "{}length={},".format(indent, self.length),
+            "{}[".format(indent),
+            nodes_str,
+            "{}]".format(indent),
+            ")",
+            "Does this look ok?  {}".format(ok_msg),
+        ])
 
     def get_orig_vals(self):
         return self.orig_vals
@@ -161,9 +188,9 @@ class CircularList:
     # doesn't tell us much.
     def vals_ok(self):
         ordered_vals = self.get_vals()
-        if len(orig_vals) != len(ordered_vals):
+        if len(self.orig_vals) != len(ordered_vals):
             return False
-        for v1,v2 in zip(sorted(orig_vals), sorted(ordered_vals)):
+        for v1,v2 in zip(sorted(self.orig_vals), sorted(ordered_vals)):
             if v1 != v2:
                 return False
         return True
@@ -192,3 +219,5 @@ if __name__ == "__main__":
     print("-- ")
 
     print(clist.get_node_i(3))
+    print("-- ")
+    print(clist)
