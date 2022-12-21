@@ -37,9 +37,14 @@ def monkey_math(monkeys, monkey):
             result = f(left) * f(right)
         elif op == "/":
             result = f(left) / f(right)
+
     return int(result)
 
 
 if __name__ == "__main__":
     monkeys = get_monkeys(sys.stdin)
-    print(monkey_math(monkeys, "root"))
+
+    print("Silver: {}".format(monkey_math(monkeys, "root")))
+
+    print("Gold: {}".format("lol"))
+    monkeys["humn"] = "XYZZY"
