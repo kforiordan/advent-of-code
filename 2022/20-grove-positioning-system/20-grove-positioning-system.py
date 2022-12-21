@@ -90,107 +90,105 @@ class Node:
 
 class CircularList:
     head: Node
-    list: [Node]
+    tail: Node
+    vals: Node
+    length: int
+    #orig_vals: [int]	# I want type 'a, not int, oh well.
 
-    def __init__(self, head):
-        self.head = head
-        self.list = [self.head]
+    # Given a list, constructs a 
+    def __init__(self, vals=None):
+        self.head = None
+        self.tail = None
+        self.vals = []
+        self.length = 0
+        self.orig_vals = vals
 
-    def attach(self, node):
-        
+        if vals != None and vals != []:
+            self.head = Node(vals[0])
+            self.orig_vals = [v for v in vals]
+            self.tail = self.head
+            pos = self.head
+            for v in vals[1:]:
+                pos.attach(Node(v))
+                self.orig_vals.append(v)
+                self.length += 1
+                pos = pos.get_succ()
+            self.tail = pos.get_pred()
+
+    def get_orig_vals(self):
+        return self.orig_vals
+
+    def get_vals(self):
+        vals = []
+        pos = self.head
+        while True:
+            vals.append(pos.get_val())
+            pos = pos.get_succ()
+            if pos == self.head:
+                break
+        return vals
+
+    def get_nodes(self):
+        nodes = []
+        pos = self.head
+        while True:
+            nodes.append(pos)
+            pos = pos.get_succ()
+            if pos == self.head:
+                break
+        return nodes
+
+    def get_node_i(self, i):
+        if i > 0 and i > self.length:
+            i = i % self.length
+        elif i < 0 and i < (0 - self.length):
+            i = i % (0 - self.length)
+        j = 0
+        pos = self.head
+        while True:
+            if j == i:
+                return pos
+            if i > 0:
+                j += 1
+            else:
+                j -= 1
+            pos = pos.get_succ()
+
+    def move(self, x):
+        return x
+
+    # This is a very weak check.  False indicates disaster, but True
+    # doesn't tell us much.
+    def vals_ok(self):
+        ordered_vals = self.get_vals()
+        if len(orig_vals) != len(ordered_vals):
+            return False
+        for v1,v2 in zip(sorted(orig_vals), sorted(ordered_vals)):
+            if v1 != v2:
+                return False
+        return True
+
 
 def get_numbers(fh):
     return [int(n.rstrip('\n')) for n in fh]
 
-def mix(numbers):
-    return numbers
-
-def get(numbers, i, n_numbers=None):
-    if n_numbers == None:
-        n_numbers = len(numbers)
-    return numbers[i]
-
-def get_c_list_vals(head):
-    pos = head
-    vals = []
-    while True:
-        vals.append(pos.get_val())
-        pos = pos.get_succ()
-        if pos == head:
-            break
-    return vals
-
-def print_c_list_vals(head):
-    print(get_c_list_vals(head))
 
 if __name__ == "__main__":
     numbers = get_numbers(sys.stdin)
-    numbers_orig = [n for n in numbers]
 
-    c_head = Node(numbers[0])
-    pos = c_head
-    for n in numbers[1:]:
-        pos.attach(Node(n))
-        pos = pos.get_succ()
+    clist = CircularList(numbers)
 
-    print("{}".format(numbers))
+    print(clist.get_vals())
+    for n in clist.get_nodes():
+        print(n)
     print("-- ")
-    #print(" -> ".join(map(lambda x: x.__repr__(), [a,b,c,d])))
-    print_c_list_vals(c_head)
-    for n in numbers_orig:
-#        print("Moving {}".format(n))
-        pos = c_head
-        while True:
-            if pos.get_val() == n:
-                break
-            else:
-                pos = pos.get_succ()
-        pos.move(pos.get_val())
-        print_c_list_vals(c_head)
 
-    exit(0)
-    # n_numbers = len(numbers)
-    # print(numbers)
-    # for n in numbers_orig:
+    for n in numbers:
+        clist.move(n)
 
-    # head = Node(numbers[0])
-    # pos = head
-    # print("-- ")
-    # for n in numbers[1:]:
-    #     pos.attach(Node(n))
-    #     pos = pos.get_succ()
+    print(clist.get_vals())
+    for n in clist.get_nodes():
+        print(n)
+    print("-- ")
 
-    # pos = head
-    # while True:
-    #     print(pos)
-    #     pos = pos.get_succ()
-    #     if pos == head:
-    #         break
-    # print("-- ")
-
-    # a = head
-    # b = head.get_succ()
-    # c = head.get_succ().get_succ()
-    # d = head.get_succ().get_succ().get_succ()
-    # print(" -> ".join(map(lambda x: x.__repr__(), [a,b,c,d])))
-    # print("-- ")
-    # print("Swapping {} with {}".format(c, b))
-    # print("-- ")
-    # c.swap_with_pred()
-    # print("-- ")
-    # a = head
-    # b = head.get_succ()
-    # c = head.get_succ().get_succ()
-    # d = head.get_succ().get_succ().get_succ()
-    # print(" -> ".join(map(lambda x: x.__repr__(), [a,b,c,d])))
-    # print("-- ")
-    # i = 10
-    # while True and i > 0:
-    #     i -= 1
-    #     print(pos)
-    #     pos = pos.get_succ()
-    #     if pos == head:
-    #         break
-    # print("-- ")
-
-
+    print(clist.get_node_i(3))
