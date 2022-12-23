@@ -36,9 +36,11 @@ def monkey_math(monkeys, monkey):
         elif op == "*":
             result = f(left) * f(right)
         elif op == "/":
-            result = f(left) / f(right)
+            result = int(f(left) / f(right))
+        elif op == "=":
+            result = f(left) == f(right)
 
-    return int(result)
+    return result
 
 
 if __name__ == "__main__":
@@ -46,5 +48,37 @@ if __name__ == "__main__":
 
     print("Silver: {}".format(monkey_math(monkeys, "root")))
 
-    print("Gold: {}".format("lol"))
-    monkeys["humn"] = "XYZZY"
+    high = 1000000000000000000
+    low = -1000000000000000000
+
+    right_result = monkey_math(monkeys, monkeys["root"]["right"])
+    print("right: {}".format(right_result))
+    i = 0
+    while True:
+        monkeys["humn"] = {"number":high}
+        print("Guessing left high={}".format(high))
+        highleft = monkey_math(monkeys, monkeys["root"]["left"])
+
+        monkeys["humn"] = {"number":low}
+        print("Guessing left low={}".format(low))
+        lowleft = monkey_math(monkeys, monkeys["root"]["left"])
+
+        if highleft == right_result or lowleft == right_result:
+            print("hallelujah {} high={}, high guess={}, low={}, low guess={}".format(i, high, highleft, low, lowleft))
+            break
+        if abs(highleft - right_result) >= abs(lowleft - right_result):
+            high = int((high + low)/2)
+        else:
+            low = int((high + low)/2)
+
+        if i > 2000:
+            break
+        i += 1
+
+
+    monkeys["humn"] = {"number":3509819803067}
+    print(monkey_math(monkeys, monkeys["root"]["left"]))
+    print(monkey_math(monkeys, monkeys["root"]["right"]))
+
+#    print("Gold: {}".format("lol"))
+#    monkeys["humn"] = "XYZZY"
