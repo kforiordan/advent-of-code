@@ -3,6 +3,7 @@
 import sys
 
 from node import Node
+from circularlist import CircularList
 
 #!/usr/bin/env python3
 
