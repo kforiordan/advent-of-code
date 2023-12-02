@@ -32,6 +32,7 @@ def get_game_counts(fh):
 
 if __name__ == "__main__":
 
+    # These limits are specified.
     limits = {"red":12, "green":13, "blue":14}
 
     game_counts = get_game_counts(sys.stdin)
@@ -42,4 +43,9 @@ if __name__ == "__main__":
 
     id_sum = sum([int(x["id"]) for x in possible_games])
 
-    print(id_sum)
+    print("Silver: {}".format(id_sum))
+
+    cube_power = lambda x: x["counts"]["red"] * x["counts"]["green"] * x["counts"]["blue"]
+
+    power_sum = sum(map(cube_power, game_counts))
+    print("Gold: {}".format(power_sum))
