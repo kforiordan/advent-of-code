@@ -1,9 +1,12 @@
 # advent-of-code
-Solutions to the 2021 & 2022 Advent of Code puzzles.
+Solutions to the Advent of Code puzzles, 2021-2023
 
 All code Apache 2.0 Licensed.
 (tl;dr: lax, non-copyleft)
 
+
+## 2023
+I swear I'm going to do these in rust
 
 ## 2022
 README files in each day's directory show how to produce the solutions - input
