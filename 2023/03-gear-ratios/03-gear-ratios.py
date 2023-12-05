@@ -63,6 +63,23 @@ def symbol_adjacent(schematic, y, x):
             f(y, x-1) or f(y, x+1) or
             f(y+1, x-1) or f(y+1, x) or f(y+1, x+1))
 
+# True if there is a number adjacent to the given coordinate.
+def number_adjacent(schematic, y, x):
+    f = lambda y, x: in_bounds(schematic, y, x) and schematic[y][x].isdigit()
+
+    return (f(y-1, x-1) or f(y-1, x) or f(y-1, x+1) or
+            f(y, x-1) or f(y, x+1) or
+            f(y+1, x-1) or f(y+1, x) or f(y+1, x+1))
+
+
+# Returns list of (y,x) tuples of adjacent gear symbols for a given coord
+def adjacent_gear_symbols(schematic, y, x):
+    # Can't unpack tuple with * magic?  Bah.
+    f = lambda yx: in_bounds(schematic, yx[0], yx[1]) and schematic[yx[0]][yx[1]] == '*'
+    return list(filter(f, [(y-1, x-1), (y-1, x), (y-1, x+1),
+                           (y, x-1), (y, x+1),
+                           (y+1, x-1), (y+1, x), (y+1, x+1)]))
+
 
 def symbol_adjacent_numbers(schematic, numbers, symbols):
     these_ones = []
@@ -77,11 +94,6 @@ def symbol_adjacent_numbers(schematic, numbers, symbols):
     return these_ones
 
 
-def discover_gears(schematic, symbols):
-    gears = filter(lambda a: a["symbol"] == '*', symbols)
-    print(gears)
-    exit(0)
-
 if __name__ == "__main__":
     schematic = get_schematic(sys.stdin)
 
@@ -89,6 +101,17 @@ if __name__ == "__main__":
     part_numbers = symbol_adjacent_numbers(schematic, numbers, symbols)
     print("Silver: {}".format(sum([n["value"] for n in part_numbers])))
 
-    gears = discover_gears(schematic, symbols)
-    f = lambda g: g["adjacent_numbers"][0] * g["adjacent_numbers"][1]
-    print("Gold: {}".format(sum([f(g) for g in gears])))
+    for n in part_numbers:
+        adjacent_to_number = []
+        for i,d in enumerate(n["digits"]):
+            for a in adjacent_gear_symbols(schematic, n["y"], n["x"]+i):
+                seen = False
+                for b in adjacent_to_number:
+                    if a == b:
+                        seen = True
+                        break
+                if not seen:
+                    adjacent_to_number.append(a)
+        n["adjacent_gears"] = adjacent_to_number
+
+    print("Gold: {}".format("lol"))
