@@ -77,11 +77,18 @@ def symbol_adjacent_numbers(schematic, numbers, symbols):
     return these_ones
 
 
+def discover_gears(schematic, symbols):
+    gears = filter(lambda a: a["symbol"] == '*', symbols)
+    print(gears)
+    exit(0)
+
 if __name__ == "__main__":
     schematic = get_schematic(sys.stdin)
 
     numbers, symbols = discover_numbers_and_symbols(schematic)
+    part_numbers = symbol_adjacent_numbers(schematic, numbers, symbols)
+    print("Silver: {}".format(sum([n["value"] for n in part_numbers])))
 
-    good_numbers = symbol_adjacent_numbers(schematic, numbers, symbols)
-
-    print("Silver: {}".format(sum([n["value"] for n in good_numbers])))
+    gears = discover_gears(schematic, symbols)
+    f = lambda g: g["adjacent_numbers"][0] * g["adjacent_numbers"][1]
+    print("Gold: {}".format(sum([f(g) for g in gears])))
