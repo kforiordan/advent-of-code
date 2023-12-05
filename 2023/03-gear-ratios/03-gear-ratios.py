@@ -101,6 +101,9 @@ if __name__ == "__main__":
     part_numbers = symbol_adjacent_numbers(schematic, numbers, symbols)
     print("Silver: {}".format(sum([n["value"] for n in part_numbers])))
 
+    # Here we identify the gear symbols adjacent to each number,
+    # and augment the numbers dictionary with this info.
+    gear_candidates = {}
     for n in part_numbers:
         adjacent_to_number = []
         for i,d in enumerate(n["digits"]):
@@ -112,6 +115,17 @@ if __name__ == "__main__":
                         break
                 if not seen:
                     adjacent_to_number.append(a)
-        n["adjacent_gears"] = adjacent_to_number
+        n["adjacent_gear_symbols"] = adjacent_to_number
+        # And here we map from gear symbol locations to numbers
+        for a in adjacent_to_number:
+            if a in gear_candidates:
+                gear_candidates[a].append(n)
+            else:
+                gear_candidates[a] = [n]
 
-    print("Gold: {}".format("lol"))
+    gold_number = 0
+    for g, ns in gear_candidates.items():
+        if len(ns) == 2:
+            gold_number += ns[0]["value"] * ns[1]["value"]
+
+    print("Gold: {}".format(gold_number))
