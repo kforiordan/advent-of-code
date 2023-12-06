@@ -79,3 +79,23 @@ if __name__ == "__main__":
 
     locations = list(map(seed2location, seeds))
     print("Silver: {}".format(min(locations)))
+
+    lowest_loc = None
+    lowest_seed = None
+    i = 0
+    while i < len(seeds):
+        start = seeds[i]
+        length = seeds[i+1]
+        j = start
+        while j < start+length:
+            loc = seed2location(j)
+            if lowest_loc == None:
+                lowest_loc = loc
+                lowest_seed = j
+            else:
+                if loc < lowest_loc:
+                    lowest_loc = loc
+                    lowest_seed = j
+            j += 1
+        i += 2
+    print("Gold: {}".format(lowest_loc))
