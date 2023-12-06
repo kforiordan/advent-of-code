@@ -26,7 +26,7 @@ def get_seeds_and_maps(fh):
             m = abc_re.match(line)
             if m:
                 a,b,c = list(map(int,[m.group(1), m.group(2), m.group(3)]))
-                rule = {'low': a, 'high': a+(c-1), 'addition': b-a}
+                rule = {'low': b, 'high': b+(c-1), 'addition': a-b}
                 these_rules.append(rule)
             else:
                 if mapping_id != None:
@@ -34,11 +34,48 @@ def get_seeds_and_maps(fh):
                     these_rules = []
     maps[mapping_id] = these_rules
 
-    return seeds, maps
+    return list(seeds), maps
 
 if __name__ == "__main__":
     seeds, maps = get_seeds_and_maps(sys.stdin)
 
-    seed2location = lambda x: 999
-    locations = map(seed2location, seeds)
+    def seed2soil(x):
+        for rule in maps["seed->soil"]:
+            if x >= rule["low"] and x <= rule["high"]:
+                return x + rule["addition"]
+        return x
+    def soil2fertilizer(x):
+        for rule in maps["soil->fertilizer"]:
+            if x >= rule["low"] and x <= rule["high"]:
+                return x + rule["addition"]
+        return x
+    def fertilizer2water(x):
+        for rule in maps["fertilizer->water"]:
+            if x >= rule["low"] and x <= rule["high"]:
+                return x + rule["addition"]
+        return x
+    def water2light(x):
+        for rule in maps["water->light"]:
+            if x >= rule["low"] and x <= rule["high"]:
+                return x + rule["addition"]
+        return x
+    def light2temperature(x):
+        for rule in maps["light->temperature"]:
+            if x >= rule["low"] and x <= rule["high"]:
+                return x + rule["addition"]
+        return x
+    def temperature2humidity(x):
+        for rule in maps["temperature->humidity"]:
+            if x >= rule["low"] and x <= rule["high"]:
+                return x + rule["addition"]
+        return x
+    def humidity2location(x):
+        for rule in maps["humidity->location"]:
+            if x >= rule["low"] and x <= rule["high"]:
+                return x + rule["addition"]
+        return x
+    def seed2location(x):
+        return humidity2location(temperature2humidity(light2temperature(water2light(fertilizer2water(soil2fertilizer(seed2soil(x)))))))
+
+    locations = list(map(seed2location, seeds))
     print("Silver: {}".format(min(locations)))
