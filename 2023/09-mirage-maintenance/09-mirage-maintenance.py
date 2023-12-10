@@ -35,3 +35,11 @@ if __name__ == "__main__":
 
     reports = get_oasis_reports(sys.stdin)
     print("Silver: {}".format(sum(map(predict_next, reports))))
+
+    # hahaha this is stupid
+    stupid = list(map(list,map(reversed, reports)))
+    print("Gold: {}".format(sum(map(predict_next, stupid))))
+
+    # Look, I get it, this was meant to be about recursion, but the
+    # above was funnier and quicker and oh man I am so far behind at
+    # the moment.
