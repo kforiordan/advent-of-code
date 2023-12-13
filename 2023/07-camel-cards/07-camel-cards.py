@@ -21,12 +21,32 @@ def get_stuff(fh):
     return rounds_or_something
 
 
-def score_hand(h):
-    n = len(h['hand'].keys())
-    v = sorted(h['hand'].values())
+def jokerize(hand):
+    new_hand = {}
+    if 'J' in hand:
+        n_j = hand['J']
+        new_hand = {k:v for k,v in hand.items() if k != 'J'}
+        default_card = 'A'
+        if new_hand == {}:
+            new_hand = {default_card:5}
+        else:
+            most_common_card = list(reversed(sorted(new_hand.keys(), key=lambda k: new_hand[k])))[0]
+            new_hand[most_common_card] += n_j
+    else:
+        new_hand = hand
+
+#    print(new_hand)
+    return new_hand
+
+
+def score_hand(h, jokers_wild=None):
     score = None
     card_rank_order = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
 
+    if jokers_wild:
+        h['hand'] = jokerize(h['hand'])
+
+    v = sorted(h['hand'].values())
     if v == [5]:
         # five of a kind
         score = 300000000
@@ -65,3 +85,11 @@ if __name__ == "__main__":
         total_score += this_score
 
     print("Silver: {}".format(total_score))
+
+    f = lambda x: score_hand(x, True)
+    ranked = sorted(rounds, key=f)
+    total_score = 0
+    for i,round in enumerate(ranked):
+        this_score = (i+1) * round["bid"]
+        total_score += this_score
+    print("Gold: {}".format(total_score))
