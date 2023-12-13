@@ -63,10 +63,12 @@ def elementwise_eq(row_a, row_b, tolerance=0):
     for a,b in zip(row_a, row_b):
         if a == b:
             continue
-        smudge_count += 1
-        if smudge_count <= tolerance:
-            continue
-        return False
+        else:
+            if a == '#':
+                smudge_count += 1
+                if smudge_count <= tolerance:
+                    continue
+            return False
     return True
 
 
