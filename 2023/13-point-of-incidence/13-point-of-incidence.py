@@ -36,17 +36,6 @@ def rotate270(pattern):
     return rotate90(rotate90(rotate90(pattern)))
 
 
-def silver(patterns, magic):
-    magic = 100
-    return sum([pattern_score(p, magic) for p in patterns])
-
-
-def gold(patterns, magic):
-    magic = 100
-    smudge_tolerance = 1
-    return sum([pattern_score(p, magic, smudge_tolerance) for p in patterns])
-
-
 def pattern_score(pattern, magic, tolerance=0):
     p = horizontal_pattern_score(pattern, magic, tolerance)
     if p == None:
@@ -98,9 +87,19 @@ def vertical_pattern_score(pattern, magic, tolerance):
     return horizontal_pattern_score(rotate90(pattern), magic, tolerance)
 
 
+def silver(patterns, magic):
+    magic = 100
+    return sum([pattern_score(p, magic) for p in patterns])
+
+
+def gold(patterns, magic):
+    magic = 100
+    smudge_tolerance = 1
+    return sum([pattern_score(p, magic, smudge_tolerance) for p in patterns])
+
+
 if __name__ == "__main__":
     patterns = get_ash_patterns(sys.stdin)
     magic = 100
     print("Silver: {}".format(silver(patterns, magic)))
     print("Gold: {}".format(gold(patterns, magic)))
-
