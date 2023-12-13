@@ -30,8 +30,19 @@ def jokerize(hand):
         if new_hand == {}:
             new_hand = {default_card:5}
         else:
-            most_common_card = list(reversed(sorted(new_hand.keys(), key=lambda k: new_hand[k])))[0]
-            new_hand[most_common_card] += n_j
+            f = lambda k: new_hand[k]
+            cards_by_frequency = list(reversed(sorted(new_hand.keys(), key=f)))
+            most_common_card = cards_by_frequency[0]
+            equally_common_cards = [card for card,n in new_hand.items() if n == new_hand[most_common_card]]
+
+            card_rank_order = ['A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', 'J']
+            card_scores = {k:i+1 for i,k in enumerate(reversed(card_rank_order))}
+
+            highest_valued = list(reversed(sorted(equally_common_cards, key=lambda c: card_scores[c])))[0]
+#            print(equally_common_cards)
+#            print(list(reversed(sorted(equally_common_cards, key=lambda c: card_scores[c]))))
+
+            new_hand[highest_valued] += n_j
     else:
         new_hand = hand
 
@@ -41,7 +52,6 @@ def jokerize(hand):
 
 def score_hand(h, jokers_wild=None):
     score = None
-    card_rank_order = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
 
     if jokers_wild:
         h['hand'] = jokerize(h['hand'])
@@ -69,6 +79,7 @@ def score_hand(h, jokers_wild=None):
         # high card
         score = 240000000
 
+    card_rank_order = ['A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', 'J']
     card_scores = {k:i+1 for i,k in enumerate(reversed(card_rank_order))}
     for i,card in enumerate(reversed(h['orig'])):
         score += pow(len(card_rank_order), i+1) * card_scores[card]
@@ -90,6 +101,7 @@ if __name__ == "__main__":
     ranked = sorted(rounds, key=f)
     total_score = 0
     for i,round in enumerate(ranked):
+#        print("{} -> {}".format(round["orig"], round["hand"]))
         this_score = (i+1) * round["bid"]
         total_score += this_score
     print("Gold: {}".format(total_score))
