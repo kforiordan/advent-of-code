@@ -56,19 +56,22 @@ def row_eq(row_a, row_b, tolerance=0):
             smudge_count += 1
             if smudge_count <= tolerance:
                 continue
-            return False
-    return True
+            return {'eq':False, 'smudge_count':smudge_count}
+
+    return {'eq':True, 'smudge_count':smudge_count}
 
 
 def horizontal_pattern_score(pattern, magic, tolerance):
     prev_row = None
     for i,row in enumerate(pattern):
         if prev_row != None:
-            if row_eq(prev_row, row, tolerance):
+            result = row_eq(prev_row, row, tolerance)
+            if result['eq'] == True:
                 j,k = i-1,i
                 found_nonmatching = False
                 while j >= 0 and k < len(pattern):
-                    if row_eq(pattern[j], pattern[k], tolerance):
+                    result = row_eq(pattern[j], pattern[k], tolerance)
+                    if result['eq'] == True:
                         j -= 1
                         k += 1
                     else:
