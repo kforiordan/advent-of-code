@@ -47,7 +47,7 @@ def pattern_score(pattern, magic, tolerance=0):
     return p
 
 
-def elementwise_eq(row_a, row_b, tolerance=0):
+def row_eq(row_a, row_b, tolerance=0):
     smudge_count = 0
     for a,b in zip(row_a, row_b):
         if a == b:
@@ -64,11 +64,11 @@ def horizontal_pattern_score(pattern, magic, tolerance):
     prev_row = None
     for i,row in enumerate(pattern):
         if prev_row != None:
-            if elementwise_eq(prev_row, row, tolerance):
+            if row_eq(prev_row, row, tolerance):
                 j,k = i-1,i
                 found_nonmatching = False
                 while j >= 0 and k < len(pattern):
-                    if elementwise_eq(pattern[j], pattern[k], tolerance):
+                    if row_eq(pattern[j], pattern[k], tolerance):
                         j -= 1
                         k += 1
                     else:
