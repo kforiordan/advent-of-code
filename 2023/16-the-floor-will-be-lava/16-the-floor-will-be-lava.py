@@ -117,9 +117,41 @@ if __name__ == "__main__":
     tiles, mirrors = get_tiles(sys.stdin)
     start = (0,-1)
     next_step = (0,1) # Moving to the right; add to current position.
-    energised = energise(tiles, start, (0,1))
+    energised = energise(tiles, start, next_step)
     paths_seen = {}
     print("Silver: {}".format(len(energised.keys())))
 #    print_tiles(tiles, energised, '#')
+
+    high_score = None
+    for y,row in enumerate(tiles):
+        start = (y, -1)
+        next_step = (0, 1)
+        energised = energise(tiles, start, next_step)
+        score = len(energised.keys())
+        if high_score == None or score > high_score:
+            high_score = score
+    for y,row in enumerate(tiles):
+        start = (y, len(row))
+        next_step = (0, -1)
+        energised = energise(tiles, start, next_step)
+        score = len(energised.keys())
+        if high_score == None or score > high_score:
+            high_score = score
+    for x,cell in enumerate(tiles[0]):
+        start = (-1, x)
+        next_step = (1, 0)
+        energised = energise(tiles, start, next_step)
+        score = len(energised.keys())
+        if high_score == None or score > high_score:
+            high_score = score
+    for x,cell in enumerate(tiles[0]):
+        start = (len(tiles), x)
+        next_step = (-1, 0)
+        energised = energise(tiles, start, next_step)
+        score = len(energised.keys())
+        if high_score == None or score > high_score:
+            high_score = score
+
+    print("Gold: {}".format(high_score))
 
 
