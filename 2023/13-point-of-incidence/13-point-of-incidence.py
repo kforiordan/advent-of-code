@@ -80,7 +80,7 @@ def horizontal_pattern_score(pattern, magic, tolerance):
                 if found_nonmatching:
                     continue
                 else:
-                    return i * magic
+                    return {'score':(i * magic), 'smudge_count':result['smudge_count']}
         prev_row = row
     return None
 
@@ -91,13 +91,16 @@ def vertical_pattern_score(pattern, magic, tolerance):
 
 def silver(patterns, magic):
     magic = 100
-    return sum([pattern_score(p, magic) for p in patterns])
+    f = lambda x: x['score']
+    return sum([f(pattern_score(p, magic)) for p in patterns])
 
 
 def gold(patterns, magic):
     magic = 100
     smudge_tolerance = 1
-    return sum([pattern_score(p, magic, smudge_tolerance) for p in patterns])
+    f = lambda x: x['score']
+    g = lambda x: x['smudge_count']
+    return sum([f(pattern_score(p, magic, smudge_tolerance)) for p in patterns])
 
 
 if __name__ == "__main__":
