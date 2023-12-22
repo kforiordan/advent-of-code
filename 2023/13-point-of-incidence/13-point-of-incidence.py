@@ -61,25 +61,28 @@ def row_eq(row_a, row_b, tolerance=0):
     return {'eq':True, 'smudge_count':smudge_count}
 
 
+def is_mirrored(pattern, j, k, tolerance):
+    t = tolerance
+    while j >= 0 and k < len(pattern):
+        result = row_eq(pattern[j], pattern[k], t)
+        if result['eq'] == True:
+            j -= 1
+            k += 1
+            t -= result['smudge_count']
+        else:
+            return result
+
+    return {'eq':True, 'tolerance':t}
+
+
 def horizontal_pattern_score(pattern, magic, tolerance):
     prev_row = None
     for i,row in enumerate(pattern):
         if prev_row != None:
             result = row_eq(prev_row, row, tolerance)
             if result['eq'] == True:
-                j,k = i-1,i
-                found_nonmatching = False
-                while j >= 0 and k < len(pattern):
-                    result = row_eq(pattern[j], pattern[k], tolerance)
-                    if result['eq'] == True:
-                        j -= 1
-                        k += 1
-                    else:
-                        found_nonmatching = True
-                        break
-                if found_nonmatching:
-                    continue
-                else:
+                result2 = is_mirrored(pattern, i-1, i, tolerance)
+                if result2['eq'] == True and result2['tolerance'] == 0:
                     return {'score':(i * magic), 'smudge_count':result['smudge_count']}
         prev_row = row
     return None
