@@ -75,6 +75,28 @@ def rotate_minus_90(p):
     return rotate_90(rotate_90(rotate_90(p)))
 
 
+# I can't remember much about hashing. .. Hmm, that's not good enough.
+# I had to do a little reading, and what I was struggling to remember
+# was 'a polynomial rolling hash function'.  I don't have time to read
+# the whole thing so let's just do a stupid implementation.
+def stupid_hash(platform):
+    stupid = 0
+    stupid_prime = 29
+    stupid_m = 100000
+    stupid_correspondence = {'.': 3,
+                             '#': 7,
+                             'O': 11,}
+
+    rolling_p = 1
+    for y,row in enumerate(platform):
+        for x,cell in enumerate(row):
+            stupid += stupid_correspondence[cell] * rolling_p
+            rolling_p = rolling_p * stupid_prime
+
+    return stupid % stupid_m
+
+
+
 def cycle(platform):
     p = platform
 
