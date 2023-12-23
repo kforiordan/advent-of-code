@@ -26,10 +26,10 @@ def find_connected(maze, y, x):
     c = maze[y][x]
     connected = []
     allowed_connections = {
-        'S': { (-1,  0): '-|7FJL',
-               ( 0, -1): '-|7FJL',
-               ( 0,  1): '-|7FJL',
-               ( 1,  0): '-|7FJL' },
+        'S': { (-1,  0): '|7F',
+               ( 0, -1): '-FL',
+               ( 0,  1): '-7J',
+               ( 1,  0): '|JL' },
         '|': { (-1,  0): '7|FS',
                ( 1,  0): 'J|LS' },
         '-': { ( 0, -1): 'L-FS',
