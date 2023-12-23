@@ -96,8 +96,9 @@ def stupid_hash(platform):
     return stupid % stupid_m
 
 
-
 def cycle(platform):
+    magic = stupid_hash(platform)
+
     p = platform
 
     # Start by tilting
@@ -118,22 +119,43 @@ def cycle(platform):
     # Back to the starting orientation
     p = rotate_90(p)
 
-    return p
+    return {'magic':magic, 'platform':p}
+
+
+def faux_cycle(platform):
+
+    seen = {}
+    max = 1000
+    p = platform
+    print("STARTING:")
+#    print_platform(p)
+    print("-- ")
+    for i in range(max):
+        result = cycle(p)
+        magic = result['magic']
+        p = result['platform']
+#        print_platform(p)
+        print("-- ")
+        print("MAGIC THOUGH: {}".format(magic))
+        print("AND THE SUM: {}".format(stupid_sum(p)))
+        if magic in seen:
+            print("iteration {}".format(i))
+            seen[magic] += 1
+        else:
+            seen[magic] = 1
+
+    print(seen)
+    return cycle(platform)
+
 
 
 if __name__ == "__main__":
     platform = get_platform(sys.stdin)
-    # print_platform(platform)
-    # print("-- ")
     if (False):
         tilted_platform = tilt_north(platform)
-        # print_platform(tilted_platform)
-        # print("-- ")
         print("Silver: {}".format(stupid_sum(platform)))
 
-    p = platform
-    print_platform(p)
-    print("----------------")
-    p = cycle(p)
-    print_platform(p)
-
+    f = lambda x: x['platform']
+    g = lambda x: x['magic']
+    print("Gold: {}".format(stupid_sum(f(faux_cycle(platform)))))
+#    print("Gold: {}".format(g(faux_cycle(platform))))
