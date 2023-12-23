@@ -11,7 +11,7 @@ def print_platform(p):
         print("".join(row))
 
 
-def tilt(platform):
+def tilt_north(platform):
     empty_space, static_rock, rolling_rock = '.', '#', 'O'
     northmost_empty = [None for _ in platform[0]]
     for y,row in enumerate(platform):
@@ -53,11 +53,65 @@ def stupid_sum(platform):
                 stupid += len(platform) - y
     return stupid
 
+
+# Borrowing transpose & rotate90 from day 13's puzzle, which I solved on day 22.
+
+# https://stackoverflow.com/questions/52342209/matrix-transpose-without-numpy-error-list-index-out-of-range
+#
+# Another suggestion on that page, list(zip(*pattern)), returns a list
+# of tuples.
+#
+def transpose(pattern):
+    return list(map(list, zip(*pattern)))
+
+
+# Building on the above transpose
+def rotate_90(pattern):
+    return [list(reversed(row)) for row in transpose(pattern)]
+
+
+# This is so stupid
+def rotate_minus_90(p):
+    return rotate_90(rotate_90(rotate_90(p)))
+
+
+def cycle(platform):
+    p = platform
+
+    # Start by tilting
+    p = tilt_north(p)
+
+    # Now west becomes north, so we can reuse tilt_north
+    p = rotate_90(p)
+    p = tilt_north(p)
+
+    # South -> west -> north
+    p = rotate_90(p)
+    p = tilt_north(p)
+
+    # East -> south -> west -> north
+    p = rotate_90(p)
+    p = tilt_north(p)
+
+    # Back to the starting orientation
+    p = rotate_90(p)
+
+    return p
+
+
 if __name__ == "__main__":
     platform = get_platform(sys.stdin)
     # print_platform(platform)
     # print("-- ")
-    tilted_platform = tilt(platform)
-    # print_platform(tilted_platform)
-    # print("-- ")
-    print("Silver: {}".format(stupid_sum(platform)))
+    if (False):
+        tilted_platform = tilt_north(platform)
+        # print_platform(tilted_platform)
+        # print("-- ")
+        print("Silver: {}".format(stupid_sum(platform)))
+
+    p = platform
+    print_platform(p)
+    print("----------------")
+    p = cycle(p)
+    print_platform(p)
+
