@@ -4,6 +4,11 @@ Solutions to the Advent of Code puzzles, 2021-2023
 All code Apache 2.0 Licensed.
 (tl;dr: lax, non-copyleft)
 
+## 2025
+May as well give it a shot
+
+## 2024
+Made the sensible decision to skip this
 
 ## 2023
 I swear I'm going to do these in rust
