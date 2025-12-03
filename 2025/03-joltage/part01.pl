@@ -8,19 +8,13 @@ sub joltage
 {
     my ($tens, $units, @digits) = @_;
 	
-    my $i = 2;
-    if (!exists($digits[0])) {
-	return ($tens * 10) + $units;
-    }
     foreach my $digit (@digits) {
-	if (defined($digit)) {
-	    if ($units > $tens) {
-		$tens = $units;
-		$units = $digit;
-	    }
-	    elsif ($digit > $units) {
-		$units = $digit;
-	    }
+	if ($units > $tens) {
+	    $tens = $units;
+	    $units = $digit;
+	}
+	elsif ($digit > $units) {
+	    $units = $digit;
 	}
     }
 
