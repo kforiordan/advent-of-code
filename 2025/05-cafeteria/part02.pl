@@ -20,6 +20,7 @@ while (<>) {
     }
 }
 
+# print everything, pipe to sort|uniq|wc -l , hurrah.  Well, no, it's way too slow.
 for my $range (@ranges) {
     my $lower = $range->[0];
     my $upper = $range->[1];
