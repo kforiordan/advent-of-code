@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use Data::Dumper;
+use Math::BigInt;
 
 my @ranges;
 my @ingredients;
@@ -23,6 +24,7 @@ sub count_intervals
 }
 
 
+# Read input from STDIN, parse, etc.
 while (<>) {
     chomp;
     if ($_ eq "") {
@@ -32,15 +34,14 @@ while (<>) {
 	}
     }
     else {
-	push @ranges, [ split('-' => $_) ];
+	push @ranges, [ map { Math::BigInt->new($_) } (split('-' => $_)) ];
     }
 }
 
-my @sorted_ranges = sort {$a->[0] <=> $b->[0] || $a->[1] <=> $b->[1]} @ranges;
-#print Dumper(\@sorted_ranges);
-my (@minimal_ranges, @complex_ranges);
 
-my @diffs;
+my @sorted_ranges = sort {$a->[0] <=> $b->[0] || $a->[1] <=> $b->[1]} @ranges;
+my @minimal_ranges;
+
 
 my $i = 0;
 for my $range (@sorted_ranges) {
@@ -56,10 +57,16 @@ for my $range (@sorted_ranges) {
 	}
 	else {
 	    if ($upper >= $next_lower) {
-		push @$range, "Simple merge with next";
 		# Push this to the next range, deal with it there.
-		# Strictly not necessary!  Doesn't affect the count.
-		$sorted_ranges[$i+1]->[0] = $lower;
+		if ($upper >= $next_upper) {
+		    push @$range, "This range encompasses the next";
+		    $sorted_ranges[$i+1]->[0] = $lower;
+		    $sorted_ranges[$i+1]->[1] = $upper;
+		}
+		else {
+		    push @$range, "Simple merge with next";
+		    $sorted_ranges[$i+1]->[0] = $lower;
+		}
 	    }
 	    elsif ($upper < $next_lower) {
 		push @$range, "Isolated";
@@ -75,21 +82,4 @@ for my $range (@sorted_ranges) {
     $i++;
 }
 
-print Dumper(\@sorted_ranges);
-print "-- \n";
-print Dumper(\@minimal_ranges);
-print "-- \n";
 print count_intervals(\@minimal_ranges)."\n";
-   
-# print Dumper(\@minimal_ranges);
-# print "COMPLEX:\n";
-# print Dumper(\@complex_ranges);
-__END__
-# print everything, pipe to sort|uniq|wc -l , hurrah.  Well, no, it's way too slow.
-for my $range (@ranges) {
-    my $i = $lower;
-    while ($i <= $upper) {
-	print "$i\n";
-	$i++;
-    }
-}
